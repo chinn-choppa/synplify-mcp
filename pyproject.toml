@@ -1,0 +1,28 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "synplify-mcp"
+version = "0.0.1"
+description = "Локальный MCP-сервер для анализа синтеза FPGA и отчётов Synopsys Synplify Pro"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+authors = [{name = "chinn-choppa"}]
+keywords = ["mcp", "fpga", "rtl", "eda", "synplify_pro"]
+dependencies = ["mcp==2.3.0"]
+
+[project.scripts]
+synplify-mcp = "synplify_mcp.server:main"
+
+[project.urls]
+Repository = "https://github.com/chinn-choppa/synplify-mcp"
+Issues = "https://github.com/chinn-choppa/synplify-mcp/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/synplify_mcp"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
