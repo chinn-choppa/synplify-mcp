@@ -84,7 +84,7 @@ class ApprovedProjectTests(unittest.TestCase):
         self.assertEqual(argv, (str(Path(sys.executable).resolve()), "-batch",
                                 str(self.project.resolve())))
         self.assertEqual(timeout, 10)
-        self.assertEqual(cwd.parent, self.artifacts)
+        self.assertEqual(cwd.parent.resolve(), self.artifacts.resolve())
         self.assertTrue(cwd.name.startswith("synthesis-"))
         self.assertEqual(log, cwd / "stdout.log")
         self.assertNotIn(str(self.root), str(result))
