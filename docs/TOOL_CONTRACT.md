@@ -34,3 +34,7 @@
 ## Экспериментальные метрики ресурсов и timing
 
 `parse_srr` может возвращать дополнительно `context`, `resources`, `timing`; значения принимаются только из явно подписанных секций и единиц. Описание ограничений и семантики: [METRICS.md](METRICS.md). `timing.kind=SYNTHESIS_ESTIMATE`, не post-route timing; `synthesis_status=UNKNOWN`.
+
+## `compare_srr_reports(baseline_path, candidate_path, encoding="auto")`
+
+Только чтение двух разрешённых `.srr`, ограниченный структурированный результат. Числовые дельты ресурсов требуют совпадения версии Synplify и целевого устройства; предварительный timing не даёт числовых дельт без достоверного подтверждения всех ограничений. Полная спецификация: [COMPARE.md](COMPARE.md). Статус синтеза — всегда `UNKNOWN`, инструмент не запускает Synplify.
