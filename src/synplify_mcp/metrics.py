@@ -116,6 +116,7 @@ def extract_metrics(text: str, codec: str, bom: int) -> dict[str, Any]:
     resource_active = False
     resource_header = False
     timing_header: re.Match[str] | None = None
+    timing_header_evidence: dict[str, Any] | None = None
     resource_section_seen = False
     timing_section_seen = False
     offset = bom
@@ -150,6 +151,7 @@ def extract_metrics(text: str, codec: str, bom: int) -> dict[str, Any]:
                     flag("TIMING_SECTION_UNTERMINATED")
                 timing_active = False
                 timing_header = None
+                timing_header_evidence = None
                 continue
 
             if upper in {"START TIMING REPORT", "START OF TIMING REPORT"}:
@@ -157,6 +159,7 @@ def extract_metrics(text: str, codec: str, bom: int) -> dict[str, Any]:
                     flag("TIMING_SECTION_UNTERMINATED")
                 timing_started = timing_active = timing_section_seen = True
                 timing_header = None
+                timing_header_evidence = None
                 resource_active = resource_header = False
                 continue
             if upper in _END_TIMING:
@@ -164,6 +167,7 @@ def extract_metrics(text: str, codec: str, bom: int) -> dict[str, Any]:
                     timing_ended = True
                 timing_active = False
                 timing_header = None
+                timing_header_evidence = None
                 continue
 
             if resource_active:
@@ -201,20 +205,24 @@ def extract_metrics(text: str, codec: str, bom: int) -> dict[str, Any]:
                 continue
             if upper == "PERFORMANCE SUMMARY":
                 timing_header = None
+                timing_header_evidence = None
                 continue
             header = _TIMING_HEADER.fullmatch(line)
             if header:
                 timing_header = header
+                timing_header_evidence = _source(raw, number, pos, "TIMING")
                 # Колонки должны согласовываться с названиями единиц.
                 for prefix in ("requested", "estimated"):
                     expected = "ns" if header[f"{prefix}_kind"].lower() == "period" else "MHz"
                     if header[f"{prefix}_unit"].lower() != expected.lower():
                         flag("INCOMPATIBLE_TIMING_UNITS")
                         timing_header = None
+                        timing_header_evidence = None
                 continue
 
             if timing_header and not line:
                 timing_header = None
+                timing_header_evidence = None
                 continue
             if timing_header:
                 columns = line.split()
@@ -240,7 +248,7 @@ def extract_metrics(text: str, codec: str, bom: int) -> dict[str, Any]:
                     "slack": slack_q,
                     "constraints": constraints,
                     "evidence": _source(raw, number, pos, "TIMING"),
-                    "header_evidence": None,  # ниже заменено при распознавании заголовка
+                    "header_evidence": timing_header_evidence,
                 })
             elif line and (line.startswith("Clock") or "slack" in line.casefold()):
                 flag("UNSUPPORTED_TIMING_FORMAT")
@@ -264,7 +272,7 @@ def extract_metrics(text: str, codec: str, bom: int) -> dict[str, Any]:
     timing_state = ("ABSENT" if not timing_section_seen else
                     "UNSUPPORTED" if not clocks else
                     "AMBIGUOUS" if "DUPLICATE_CLOCK" in issues else
-                    "PARTIAL" if not timing_ended or
+                    "PARTIAL" if not timing_ended or "TIMING_SECTION_UNTERMINATED" in issues or
                     any(q["state"] != "KNOWN" for row in clocks
                         for q in (row["requested"], row["estimated"], row["slack"]))
                     or any(x.startswith(("UNSUPPORTED_TIMING", "INCOMPATIBLE_TIMING",
