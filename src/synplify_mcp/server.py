@@ -1,4 +1,4 @@
-"""Read-only stdio MCP. В этой версии нет запуска EDA-команд."""
+"""Локальный MCP: анализ без запуска и опциональный одобренный EDA-процесс."""
 
 from __future__ import annotations
 
@@ -9,6 +9,7 @@ from mcp.types import ToolAnnotations
 
 from . import __version__
 from .approved_run import ENABLE_ENV, run_approved_project
+from .compare import compare_srr
 from .diagnostics import parse_diagnostics_text
 from .runtime import inspect_tool
 from .srr import read_srr_report
@@ -25,10 +26,11 @@ def create_server() -> MCPServer:
             "server": "synplify-mcp",
             "version": __version__,
             "vendor_tool": "synplify_pro",
-            "stage": "bootstrap",
-            "operations": ["server_info", "tool_status", "parse_diagnostics", "parse_srr", "run_approved_synthesis"],
+            "stage": "experimental",
+            "operations": ["server_info", "tool_status", "parse_diagnostics", "parse_srr", "compare_srr_reports", "run_approved_synthesis"],
             "eda_execution_enabled": os.getenv(ENABLE_ENV) == "1",
-            "eda_execution_supported": False,
+            "eda_execution_supported": True,
+            "eda_execution_validated": False,
         }
 
     @server.tool()
@@ -45,6 +47,14 @@ def create_server() -> MCPServer:
     def parse_srr(relative_path: str, encoding: str = "auto", limit: int = 200) -> dict[str, object]:
         """Читать .srr из заранее разрешённого локального каталога, без запуска EDA."""
         return read_srr_report(relative_path, encoding, limit)
+
+    @server.tool(annotations=ToolAnnotations(
+        read_only_hint=True, open_world_hint=False,
+    ))
+    def compare_srr_reports(baseline_path: str, candidate_path: str,
+                            encoding: str = "auto") -> dict[str, object]:
+        """Сопоставить два отчёта из разрешённого workspace без запуска EDA."""
+        return compare_srr(baseline_path, candidate_path, encoding)
 
     @server.tool(annotations=ToolAnnotations(
         read_only_hint=False,

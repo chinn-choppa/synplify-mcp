@@ -45,3 +45,7 @@ Issue #5 adds conservative extraction only from explicitly labelled sections. Un
 ## Experimental approved-project execution
 
 `run_approved_synthesis` (#6) is disabled by default. It requires an operator-owned project allowlist and checks the `.prj` SHA-256; it never accepts arbitrary Tcl/shell arguments. The project can itself execute Tcl, so this is **not a sandbox**. Exit zero is not EDA success. Read the [operator guide](docs/APPROVED_RUN.en.md).
+
+## Comparing report snapshots
+
+`compare_srr_reports` compares only authorized `.srr` reports with evidence and compatibility gates. Preliminary timing deltas are blocked without verified full constraints. See the [comparison contract](docs/COMPARE.en.md).

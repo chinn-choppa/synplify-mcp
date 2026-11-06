@@ -37,11 +37,21 @@ class SrrProtocolTests(unittest.TestCase):
                     "clk_mcp 10.0 11.0 -1.0\nEND TIMING REPORT\n",
                     encoding="utf-8",
                 )
+                Path(tmp, "metrics2.srr").write_text(
+                    "Synplify Pro Version: MOCK\n"
+                    "Resource Usage Report\nTotal LUTs: 6\n"
+                    "START TIMING REPORT\nPerformance Summary\n"
+                    "Clock Requested Period (ns) Estimated Period (ns) Slack (ns)\n"
+                    "clk_mcp 10.0 12.0 -2.0\nEND TIMING REPORT\n",
+                    encoding="utf-8",
+                )
                 with patch.dict(os.environ, {"SYNPLIFY_MCP_WORKSPACE": tmp,
                                           "SYNPLIFY_MCP_ENABLE_SYNTHESIS": "0"}):
                     async with Client(create_server()) as client:
                         page = await client.list_tools()
                         self.assertIn("parse_srr", {t.name for t in page.tools})
+                    self.assertIn("compare_srr_reports", {t.name for t in page.tools})
+                        self.assertIn("compare_srr_reports", {t.name for t in page.tools})
                         self.assertIn("run_approved_synthesis", {t.name for t in page.tools})
                         operation = next(t for t in page.tools
                                          if t.name == "run_approved_synthesis")
@@ -74,6 +84,14 @@ class SrrProtocolTests(unittest.TestCase):
                         self.assertEqual(payload["timing"]["clocks"][0]["clock"], "clk_mcp")
                         self.assertEqual(payload["timing"]["clocks"][0]["slack"]["unit"], "ns")
                         self.assertEqual(payload["synthesis_status"], "UNKNOWN")
+                        comparison = await client.call_tool(
+                            "compare_srr_reports",
+                            {"baseline_path": "metrics.srr", "candidate_path": "metrics2.srr"},
+                        )
+                        self.assertFalse(comparison.is_error)
+                        self.assertEqual(comparison.structured_content["state"], "UNVERIFIED")
+                        self.assertFalse(comparison.structured_content["executed"])
+                        self.assertEqual(comparison.structured_content["synthesis_status"], "UNKNOWN")
                         denied = await client.call_tool("parse_srr",
                                                        {"relative_path": "../secret.srr"})
                         self.assertFalse(denied.is_error)
@@ -86,6 +104,10 @@ class SrrProtocolTests(unittest.TestCase):
             with tempfile.TemporaryDirectory() as tmp:
                 Path(tmp, "sample.srr").write_text(
                     "Compiler Report\n@E: DEMO009 : rtl/test.sv(2): example\n", encoding="utf-8"
+                )
+                Path(tmp, "sample2.srr").write_text(
+                    "Compiler Report\n@W: DEMO011 : rtl/test.sv(8): new warning\n",
+                    encoding="utf-8",
                 )
                 env = dict(os.environ, SYNPLIFY_MCP_WORKSPACE=tmp,
                            SYNPLIFY_MCP_ENABLE_SYNTHESIS="0")
@@ -115,6 +137,13 @@ class SrrProtocolTests(unittest.TestCase):
                     self.assertEqual(result.structured_content["diagnostic_count"], 1)
                     self.assertEqual(result.structured_content["diagnostics"][0]["code"],
                                      "DEMO009")
+                    comparison = await client.call_tool(
+                        "compare_srr_reports",
+                        {"baseline_path": "sample.srr", "candidate_path": "sample2.srr"},
+                    )
+                    self.assertFalse(comparison.is_error)
+                    self.assertEqual(comparison.structured_content["state"], "UNVERIFIED")
+                    self.assertEqual(comparison.structured_content["diagnostics"]["observed_change_count"], 2)
         asyncio.run(asyncio.wait_for(check(), timeout=25))
 
 

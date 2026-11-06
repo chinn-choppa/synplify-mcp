@@ -37,10 +37,11 @@ class ServerStubTests(unittest.TestCase):
             try:
                 module = importlib.import_module(target)
                 server = module.create_server()
-                self.assertEqual(set(server.tools), {"server_info", "tool_status", "parse_diagnostics", "parse_srr", "run_approved_synthesis"})
+                self.assertEqual(set(server.tools), {"server_info", "tool_status", "parse_diagnostics", "parse_srr", "compare_srr_reports", "run_approved_synthesis"})
                 info = server.tools["server_info"]()
-                self.assertEqual(info["stage"], "bootstrap")
-                self.assertFalse(info["eda_execution_supported"])
+                self.assertEqual(info["stage"], "experimental")
+                self.assertTrue(info["eda_execution_supported"])
+                self.assertFalse(info["eda_execution_validated"])
                 found = server.tools["parse_diagnostics"]("", limit=1)
                 self.assertEqual(found["count"], 0)
             finally:

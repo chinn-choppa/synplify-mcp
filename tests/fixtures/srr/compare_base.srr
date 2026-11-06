@@ -1,0 +1,15 @@
+Synthetic original example: not produced by Synplify
+Synplify Pro Version: MOCK-CMP-1
+Target Device: DEMO-CMP
+Compiler Report
+@W: DEMO220 : rtl/same.sv(3): Stable warning
+@W: DEMO221 : rtl/top.sv(10): Unused input
+Resource Usage Report
+Total LUTs: 10
+Register bits not including I/Os: 6
+START OF TIMING REPORT
+Performance Summary
+Clock Requested Period (ns) Estimated Period (ns) Slack (ns)
+core 10.0 11.0 -1.0
+aux 20.0 19.0 1.0
+END OF TIMING REPORT

@@ -38,3 +38,7 @@
 ## `run_approved_synthesis(project_id, acknowledge_side_effects=false, timeout_seconds=30)`
 
 Операция с **побочными эффектами**, по умолчанию запрещена. Только операторский манифест с SHA-256 проекта, настройка сервера через переменные окружения, фиксированный `synplify_pro -batch <approved.prj>`, без свободных аргументов Tcl/shell. `acknowledge_side_effects` **не** равнозначен подтверждению человеком; согласие контролирует MCP-клиент. `PROCESS_EXIT_ZERO_UNVERIFIED` не равен `EDA_PASS`. Ограничения изоляции и контракт состояний: [APPROVED_RUN.md](APPROVED_RUN.md).
+
+## `compare_srr_reports(baseline_path, candidate_path, encoding="auto")`
+
+Сопоставляет два отчёта по исходным строкам с точными SHA-256. Ресурсные дельты вычисляются только при совместимом контексте; числовой timing без полного доказательства эквивалентности ограничений не сравнивается. [Контракт RU](COMPARE.md) / [EN](COMPARE.en.md).
