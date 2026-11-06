@@ -33,3 +33,7 @@ Licensed under Apache-2.0. No proprietary EDA executables, licenses or private p
 ## Format research
 
 [Report format inventory and synthetic fixture provenance](docs/REPORT_FORMATS.en.md).
+
+## Reading .srr reports (experimental)
+
+The `parse_srr` tool reads only files inside an operator-approved `SYNPLIFY_MCP_WORKSPACE`. See [safe parser contract](docs/SRR_PARSER.en.md). Missing diagnostics never prove synthesis succeeded.
