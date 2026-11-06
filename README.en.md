@@ -1,6 +1,6 @@
 # synplify-mcp
 
-[Русский](README.md) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md)
+[Русский](README.md) · [Contributing](CONTRIBUTING.en.md) · [Security](SECURITY.en.md)
 
 Community-focused, local-first MCP adapter for **Synopsys Synplify Pro**. This is an independently maintained open-source project, not an official vendor product.
 
@@ -26,7 +26,7 @@ python -m unittest discover -s tests -v
 python -m compileall -q src tests
 ```
 
-Review [architecture](docs/ARCHITECTURE.md), [roadmap](docs/ROADMAP.md) and [security](SECURITY.md). Russian is used for most engineering documentation; international contributions are welcome, including improvements to English documentation.
+Review [architecture](docs/ARCHITECTURE.en.md), [roadmap](docs/ROADMAP.en.md) and [security](SECURITY.md). Russian is used for most engineering documentation; international contributions are welcome, including improvements to English documentation.
 
 Licensed under Apache-2.0. No proprietary EDA executables, licenses or private project data are distributed here.
 

@@ -1,8 +1,10 @@
+[English](COMPATIBILITY.en.md)
+
 # Совместимость
 
 | Уровень | Ожидается | Подтверждено на момент создания |
 | --- | --- | --- |
-| Python | 3.11+ | CI: Python 3.11/3.13 на Windows/Linux; Python 3.15 `NOT_RUN` |
+| Python | 3.11+ | CI: Python 3.11/3.13 на Windows/Linux; Python 3.15: интеграционный CI ожидает результатов |
 | MCP | SDK 2.3.0, stdio | `MCP_TOOL_PASS`: Windows/Linux, Python 3.11/3.13, синтетический `parse_srr` через реальный клиент; см. CI PR #10 |
 | Windows | Планируется | EDA `NOT_RUN` |
 | Linux | Планируется | EDA `NOT_RUN` |
