@@ -49,3 +49,7 @@ Issue #5 adds conservative extraction only from explicitly labelled sections. Un
 ## Comparing report snapshots
 
 `compare_srr_reports` compares only authorized `.srr` reports with evidence and compatibility gates. Preliminary timing deltas are blocked without verified full constraints. See the [comparison contract](docs/COMPARE.en.md).
+
+## Full integration verification
+
+All six operations are assembled and tested on Windows/Linux × Python 3.11/3.13/3.15.2. See [integration review](docs/INTEGRATION_REVIEW.en.md). This does not establish licensed Synplify acceptance or merge anything into `main`.

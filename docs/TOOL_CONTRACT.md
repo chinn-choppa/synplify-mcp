@@ -6,7 +6,7 @@
 
     ## `server_info()`
 
-    Возвращает `server`, `version`, `vendor_tool`, `stage`, `operations`. `stage="bootstrap"` запрещает трактовать результаты как готовую автоматизацию Synopsys Synplify Pro.
+    Возвращает `server`, `version`, `vendor_tool`, `stage`, `operations`. `stage="experimental"` запрещает трактовать результаты как готовую автоматизацию Synopsys Synplify Pro.
 
     ## `tool_status()`
 

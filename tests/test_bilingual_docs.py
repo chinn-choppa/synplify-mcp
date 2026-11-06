@@ -10,7 +10,7 @@ BILINGUAL = [
     "docs/ROADMAP.md", "docs/TOOL_CONTRACT.md", "docs/TESTING.md",
     "docs/COMPATIBILITY.md", "docs/THIRD_PARTY.md",
     "docs/REPORT_FORMATS.md", "docs/SRR_PARSER.md", "docs/METRICS.md",
-    "docs/COMPARE.md", "docs/APPROVED_RUN.md",
+    "docs/COMPARE.md", "docs/APPROVED_RUN.md", "docs/INTEGRATION_REVIEW.md",
 ]
 
 

@@ -4,7 +4,7 @@
 
 | Level | Target | Evidence |
 | --- | --- | --- |
-| Python | 3.11+ | Integration CI on 3.11, 3.13 and 3.15; confirm results before claiming PASS |
+| Python | 3.11+ | Integration CI on 3.11, 3.13 and 3.15.2; 6/6 integration CI jobs PASS |
 | MCP | Official SDK 2.3.0 | Native in-memory and subprocess stdio tests |
 | Windows/Linux | Local report tools and mock executor | Public CI on both OS families |
 | Synplify Pro | Release-dependent | NOT_RUN with licensed commercial binary |
