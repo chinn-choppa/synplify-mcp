@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 
 from mcp.server import MCPServer
+from mcp.types import ToolAnnotations
 
 from . import __version__
 from .approved_run import ENABLE_ENV, run_approved_project
@@ -45,7 +46,12 @@ def create_server() -> MCPServer:
         """Читать .srr из заранее разрешённого локального каталога, без запуска EDA."""
         return read_srr_report(relative_path, encoding, limit)
 
-    @server.tool()
+    @server.tool(annotations=ToolAnnotations(
+        read_only_hint=False,
+        destructive_hint=True,
+        idempotent_hint=False,
+        open_world_hint=True,
+    ))
     def run_approved_synthesis(project_id: str, acknowledge_side_effects: bool = False,
                                timeout_seconds: int = 30) -> dict[str, object]:
         """Может менять файлы: только доверенный .prj с явным разрешением."""

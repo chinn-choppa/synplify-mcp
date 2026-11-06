@@ -12,7 +12,7 @@ class MCPStub:
         self.name = name
         self.tools = {}
 
-    def tool(self):
+    def tool(self, **kwargs):
         def register(fn):
             self.tools[fn.__name__] = fn
             return fn

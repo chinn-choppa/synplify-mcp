@@ -43,6 +43,16 @@ class SrrProtocolTests(unittest.TestCase):
                         page = await client.list_tools()
                         self.assertIn("parse_srr", {t.name for t in page.tools})
                         self.assertIn("run_approved_synthesis", {t.name for t in page.tools})
+                    operation = next(t for t in page.tools
+                                     if t.name == "run_approved_synthesis")
+                    self.assertIsNotNone(operation.annotations)
+                    self.assertFalse(operation.annotations.read_only_hint)
+                    self.assertTrue(operation.annotations.destructive_hint)
+                        operation = next(t for t in page.tools
+                                         if t.name == "run_approved_synthesis")
+                        self.assertIsNotNone(operation.annotations)
+                        self.assertFalse(operation.annotations.read_only_hint)
+                        self.assertTrue(operation.annotations.destructive_hint)
                         refused = await client.call_tool(
                             "run_approved_synthesis",
                             {"project_id": "demo", "acknowledge_side_effects": True}
