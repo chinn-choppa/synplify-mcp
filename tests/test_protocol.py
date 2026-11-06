@@ -17,7 +17,8 @@ class ProtocolTests(unittest.TestCase):
     def test_in_memory_mcp_exchange(self) -> None:
         async def check() -> None:
             async with Client(create_server()) as client:
-                tools = await client.list_tools()
+                tools, cursor = await client.list_tools()
+                self.assertIsNone(cursor)
                 self.assertEqual({tool.name for tool in tools}, EXPECTED_TOOLS)
                 response = await client.call_tool("server_info", {})
                 self.assertFalse(response.is_error)
@@ -41,7 +42,8 @@ class ProtocolTests(unittest.TestCase):
                 env=os.environ.copy(),
             )
             async with Client(params) as client:
-                tools = await client.list_tools()
+                tools, cursor = await client.list_tools()
+                self.assertIsNone(cursor)
                 self.assertEqual({tool.name for tool in tools}, EXPECTED_TOOLS)
                 response = await client.call_tool("server_info", {})
                 self.assertFalse(response.is_error)
