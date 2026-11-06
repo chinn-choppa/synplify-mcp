@@ -11,7 +11,7 @@ import io
 import os
 import re
 import stat
-from pathlib import Path, PureWindowsPath
+from pathlib import Path, PurePosixPath, PureWindowsPath
 
 MAX_REPORT_BYTES = 1_048_576
 MAX_ITEMS = 200
@@ -223,7 +223,9 @@ def read_srr_report(relative_path: str, encoding: str = "auto", limit: int = 200
         return _error("INVALID_LIMIT")
     if encoding not in {"auto", "utf-8", "cp1252"}:
         return _error("UNSUPPORTED_ENCODING")
-    if "\\" in relative_path or ":" in relative_path or PureWindowsPath(relative_path).drive:
+    if ("\\" in relative_path or ":" in relative_path
+            or PureWindowsPath(relative_path).root
+            or PurePosixPath(relative_path).is_absolute()):
         return _error("INVALID_PATH")
     rel = Path(relative_path)
     if rel.is_absolute() or ".." in rel.parts or not rel.parts or rel.suffix.lower() != ".srr":
