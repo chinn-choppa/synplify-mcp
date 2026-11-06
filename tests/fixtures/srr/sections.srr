@@ -1,0 +1,13 @@
+Synthetic example – not produced by Synplify Pro
+Compiler Report
+@N: DEMO010 : rtl/counter.sv(8): Recognized register pattern
+@W: DEMO120 : rtl/memory.sv(21): Inferred latch for signal ready
+@W: DEMO121 : rtl/blackbox.sv(7): Black box instance not resolved
+Mapper Report
+@I: DEMO130 : Mapping phase reached
+START OF TIMING REPORT
+Performance Summary
+clk_demo 80 MHz 75 MHz
+END OF TIMING REPORT
+Resource Usage Report
+Demo cells: 17

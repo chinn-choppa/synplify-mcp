@@ -1,0 +1,15 @@
+Synthetic original example: not produced by Synplify
+Synplify Pro Version: MOCK-CMP-1
+Target Device: DEMO-CMP
+Compiler Report
+@W: DEMO220 : rtl/same.sv(3): Stable warning
+@E: DEMO222 : rtl/top.sv(11): Inferred latch
+Resource Usage Report
+Total LUTs: 14
+Register bits not including I/Os: 5
+START OF TIMING REPORT
+Performance Summary
+Clock Requested Period (ns) Estimated Period (ns) Slack (ns)
+core 10.0 12.5 -2.5
+aux 20.0 18.0 2.0
+END OF TIMING REPORT

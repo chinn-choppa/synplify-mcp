@@ -1,0 +1,11 @@
+Synthetic example — not produced by Synplify Pro
+Compiler Report
+Clock Requested Period (ns) Estimated Period (ns) Slack (ns)
+fake 10 12 -2
+Resource Usage Report
+Unrecognized resources: 123
+START TIMING REPORT
+Performance Summary
+Clock Requested Period (ps) Estimated Period (ps) Slack (ps)
+clk 1000 900 100
+END TIMING REPORT
