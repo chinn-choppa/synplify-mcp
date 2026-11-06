@@ -32,7 +32,7 @@ class ParseSrrTests(unittest.TestCase):
         self.assertEqual(second["byte_offset"], data.find(b"@E:"))
         self.assertEqual(second["severity"], "error")
         self.assertIsNone(result["tool_version"])
-        self.assertEqual(result["resources"]["state"], "NOT_EXTRACTED")
+        self.assertEqual(result["resources"]["state"], "ABSENT")
         self.assertEqual(result["timing"]["kind"], "SYNTHESIS_ESTIMATE")
 
     def test_sectioned_variation_and_categories(self) -> None:
