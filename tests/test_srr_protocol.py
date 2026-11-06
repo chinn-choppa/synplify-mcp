@@ -50,7 +50,6 @@ class SrrProtocolTests(unittest.TestCase):
                     async with Client(create_server()) as client:
                         page = await client.list_tools()
                         self.assertIn("parse_srr", {t.name for t in page.tools})
-                    self.assertIn("compare_srr_reports", {t.name for t in page.tools})
                         self.assertIn("compare_srr_reports", {t.name for t in page.tools})
                         self.assertIn("run_approved_synthesis", {t.name for t in page.tools})
                         operation = next(t for t in page.tools
@@ -117,6 +116,7 @@ class SrrProtocolTests(unittest.TestCase):
                 async with Client(params) as client:
                     page = await client.list_tools()
                     self.assertIn("parse_srr", {t.name for t in page.tools})
+                    self.assertIn("compare_srr_reports", {t.name for t in page.tools})
                     self.assertIn("run_approved_synthesis", {t.name for t in page.tools})
                     operation = next(t for t in page.tools
                                      if t.name == "run_approved_synthesis")
