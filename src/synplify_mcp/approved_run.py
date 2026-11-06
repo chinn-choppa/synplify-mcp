@@ -269,6 +269,10 @@ def run_approved_project(
     executable = Path(configured_exe)
     if not executable.is_absolute() or executable.is_symlink() or not executable.is_file():
         return _result("INVALID_EXECUTABLE")
+    # Windows may dispatch .bat/.cmd through cmd.exe even with shell=False.
+    # This opt-in runner accepts only native .exe binaries on Windows.
+    if os.name == "nt" and executable.suffix.lower() != ".exe":
+        return _result("INVALID_EXECUTABLE")
     if os.name != "nt" and not os.access(executable, os.X_OK):
         return _result("INVALID_EXECUTABLE")
     manifest_path = os.environ.get(MANIFEST_ENV)

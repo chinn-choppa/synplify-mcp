@@ -116,6 +116,20 @@ class ApprovedProjectTests(unittest.TestCase):
             self.assertEqual(self.run_mock()["state"], "INVALID_EXECUTABLE")
         self.assertFalse(self.calls)
 
+    @unittest.skipUnless(os.name == "nt", "Windows-only executable safety")
+    def test_windows_script_launchers_rejected(self):
+        for suffix in (".bat", ".cmd", ".ps1"):
+            with self.subTest(suffix=suffix):
+                script = self.root / ("untrusted" + suffix)
+                script.write_text("echo malicious", encoding="utf-8")
+                with patch.dict(os.environ, {
+                    "SYNPLIFY_MCP_EXECUTABLE": str(script)
+                }):
+                    result = self.run_mock()
+                self.assertEqual(result["state"], "INVALID_EXECUTABLE")
+                self.assertFalse(result["executed"])
+                self.assertEqual(self.calls, [])
+
     def test_project_modification_and_manifest_ambiguity(self):
         self.project.write_text("modified", encoding="utf-8")
         self.assertEqual(self.run_mock()["state"], "PROJECT_CHANGED")
