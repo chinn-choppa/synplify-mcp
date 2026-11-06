@@ -162,9 +162,11 @@ def _resources(baseline: dict[str, Any], candidate: dict[str, Any],
     changes: list[dict[str, Any]] = []
     count = 0
     mismatches = []
+    changed_membership = False
     for key in sorted(lb.keys() | rb.keys()):
         left, right = lb.get(key), rb.get(key)
         if left is None or right is None:
+            changed_membership = True
             count += 1
             if len(changes) < MAX_CHANGED_ITEMS:
                 changes.append({
@@ -203,7 +205,7 @@ def _resources(baseline: dict[str, Any], candidate: dict[str, Any],
             "candidate_evidence": _evidence(right["evidence"]),
         })
     return {
-        "state": "PARTIAL" if mismatches else "COMPARABLE",
+        "state": "PARTIAL" if mismatches or changed_membership else "COMPARABLE",
         "change_count": count,
         "changes": changes,
         "entries_limited": count > len(changes),

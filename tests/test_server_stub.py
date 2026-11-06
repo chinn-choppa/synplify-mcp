@@ -34,7 +34,7 @@ class ServerStubTests(unittest.TestCase):
             try:
                 module = importlib.import_module(target)
                 server = module.create_server()
-                self.assertEqual(set(server.tools), {"server_info", "tool_status", "parse_diagnostics", "parse_srr"})
+                self.assertEqual(set(server.tools), {"server_info", "tool_status", "parse_diagnostics", "parse_srr", "compare_srr_reports"})
                 info = server.tools["server_info"]()
                 self.assertEqual(info["stage"], "bootstrap")
                 self.assertFalse(info["eda_execution_supported"])
