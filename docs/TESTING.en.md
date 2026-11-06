@@ -20,3 +20,7 @@ Public CI does **not** require Synplify Pro, a commercial license, or proprietar
 Real vendor acceptance must be recorded separately: verified Synplify version,
 target device, operating system, Python/MCP version, constraints, project/report
 SHA-256, exit status and artifacts. Until performed it remains `NOT_RUN`.
+
+## FastMCP experiment
+
+`uv sync` pins FastMCP 4.1.6 and official MCP SDK 2.3.0. The in-memory `fastmcp.Client` validates tool enumeration, annotations and schemas. The independent official `mcp.Client` invokes real subprocess `stdio` `tools/list`/`tools/call`, including strict unexpected-input rejection and default-off synthesis. See the [reproducible matrix and dependency comparison](FASTMCP_EXPERIMENT.en.md).

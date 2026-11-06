@@ -16,3 +16,5 @@
 ### Not verified
 - No licensed Synplify product/version or production FPGA design has been run
 - Process exit code zero never establishes verified vendor synthesis success
+
+- Experimental FastMCP 4.1.6 server adapter; EDA logic unchanged and official SDK client still validates stdio. Not merged; see [experiment](docs/FASTMCP_EXPERIMENT.en.md).

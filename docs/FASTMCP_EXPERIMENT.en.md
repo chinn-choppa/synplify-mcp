@@ -58,3 +58,27 @@ Official FastMCP documentation:
 [client testing](https://gofastmcp.com/clients/client).
 
 Do not merge into `main` or PR #15 without separate owner approval.
+
+## Reproducible findings (6 November 2026)
+
+| Check | MCPServer (PR #15) | FastMCP 4.1.6 |
+| --- | --- | --- |
+| OS/Python matrix | Windows/Linux × 3.11/3.13/3.15.2: 6/6 | Windows/Linux × 3.11/3.13/3.15.2: 6/6 |
+| Unit tests per job | 79 | 80 (extra strict-input test) |
+| Independent stdio client | Official MCP SDK 2.3.0 | Same official SDK 2.3.0 |
+| uv-resolved packages (Linux/3.13) | 31 | 65 |
+| Installed packages (Linux/3.13) | 29 | 63 |
+| Licensed vendor Synplify | NOT_RUN | NOT_RUN |
+
+**Evidence:** [MCPServer integration CI](https://github.com/chinn-choppa/synplify-mcp/actions/runs/42203127472),
+[FastMCP experiment CI](https://github.com/chinn-choppa/synplify-mcp/actions/runs/42213862834).
+Both package counts come from `uv sync` in
+`unit (ubuntu-latest, 3.13)`; FastMCP adds **34 packages**.
+CI test wall time is *not* a fair framework performance benchmark:
+the test sets and machines/caches are not controlled.
+
+**Preliminary decision:** migration/interoperability is verified,
+but the extra dependency cost is significant for six simple tools.
+Keep the experimental PR as draft. Before recommending rollout,
+demonstrate a genuine need for middleware/composition or investigate
+a `fastmcp-slim` subset with appropriate optional extras.
