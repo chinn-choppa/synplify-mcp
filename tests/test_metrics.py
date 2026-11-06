@@ -139,6 +139,23 @@ class ReportMetricsTests(unittest.TestCase):
         self.assertEqual(result["resources"]["state"], "PARTIAL")
         self.assertEqual(result["timing"]["state"], "UNSUPPORTED")
 
+
+    def test_explicitly_missing_table_capacity_marks_partial(self) -> None:
+        r = parse_srr_bytes(
+            b"Resource Usage Report\nResource Used Available\n"
+            b"SB_LUT4 6 N/A\n"
+        )
+        self.assertEqual(r["resources"]["state"], "PARTIAL")
+        entry = r["resources"]["items"][0]
+        self.assertEqual(entry["used"]["value"], 6)
+        self.assertIsNone(entry["available"]["value"])
+        self.assertTrue(entry["available"]["reported"])
+
+    def test_no_invented_synthesis_success_even_with_positive_slack(self) -> None:
+        r = parse("metrics_period.srr")
+        self.assertEqual(r["timing"]["clocks"][1]["slack"]["value"], 1.5)
+        self.assertEqual(r["synthesis_status"], "UNKNOWN")
+
     def test_utf16_bom_metric_offsets(self) -> None:
         text = ("Synplify Pro Version: MOCK\n"
                 "Resource Usage Report\nTotal LUTs: 7\n")

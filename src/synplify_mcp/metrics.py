@@ -80,7 +80,7 @@ def _resource(name: str, used: str, available: str | None, raw: str,
         "key": name.casefold(),
         "used": {"value": used_value, "unit": "count",
                  "state": "KNOWN" if used_value is not None else "UNKNOWN"},
-        "available": {"value": available_value, "unit": "count",
+        "available": {"value": available_value, "unit": "count", "reported": available is not None,
                       "state": "KNOWN" if available_value is not None else "UNKNOWN"},
         "evidence": _source(raw, line, offset, "RESOURCE_USAGE"),
     }
@@ -266,7 +266,9 @@ def extract_metrics(text: str, codec: str, bom: int) -> dict[str, Any]:
     resource_state = ("ABSENT" if not resource_section_seen else
                       "UNSUPPORTED" if not resources else
                       "AMBIGUOUS" if "DUPLICATE_RESOURCE" in issues else
-                      "PARTIAL" if any(item["used"]["state"] != "KNOWN" for item in resources)
+                      "PARTIAL" if any(item["used"]["state"] != "KNOWN" or
+                      (item["available"]["reported"] and item["available"]["state"] != "KNOWN")
+                      for item in resources)
                       or any(x.startswith(("UNSUPPORTED_RESOURCE", "RESOURCE_LIMIT", "METRIC_LINE"))
                              for x in issues) else "PARSED")
     timing_state = ("ABSENT" if not timing_section_seen else

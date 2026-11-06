@@ -44,9 +44,9 @@ uv run synplify-mcp
   результат к конкретному файлу. `tool_version` и `device` равны
   `null`, когда надёжных сведений нет. Подписанные данные ресурсов и
   предварительного timing описаны в [контракте метрик](METRICS.md).
-- `resources.state="NOT_EXTRACTED"`; `timing.state="NOT_EXTRACTED"`.
-  Консервативная нормализация ресурсов/timing — задача #5, описание в
-  [METRICS.md](METRICS.md). Timing Synplify является
+- `resources.state` и `timing.state` отражают `PARSED`, `PARTIAL`, `ABSENT`,
+  `AMBIGUOUS` или `UNSUPPORTED`. Распознаётся только ограниченный набор
+  подписанных таблиц: [METRICS.md](METRICS.md). Timing Synplify является
   предварительной оценкой, **не** post-place-and-route характеристикой.
 
 Поддерживается UTF-8, UTF-8 с BOM, UTF-16 LE/BE с BOM; Windows-1252
