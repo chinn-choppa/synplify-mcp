@@ -42,9 +42,11 @@ uv run synplify-mcp
   уровень, код (или `null`), необязательное расположение в RTL и категорию.
 - `report_sha256`, `encoding`, `size_bytes` позволяют привязать
   результат к конкретному файлу. `tool_version` и `device` равны
-  `null`, когда надёжных сведений нет.
+  `null`, когда надёжных сведений нет. Подписанные данные ресурсов и
+  предварительного timing описаны в [контракте метрик](METRICS.md).
 - `resources.state="NOT_EXTRACTED"`; `timing.state="NOT_EXTRACTED"`.
-  Анализ ресурсов/timing — отдельная задача #5. Timing Synplify является
+  Консервативная нормализация ресурсов/timing — задача #5, описание в
+  [METRICS.md](METRICS.md). Timing Synplify является
   предварительной оценкой, **не** post-place-and-route характеристикой.
 
 Поддерживается UTF-8, UTF-8 с BOM, UTF-16 LE/BE с BOM; Windows-1252

@@ -37,3 +37,7 @@ Licensed under Apache-2.0. No proprietary EDA executables, licenses or private p
 ## Reading .srr reports (experimental)
 
 The `parse_srr` tool reads only files inside an operator-approved `SYNPLIFY_MCP_WORKSPACE`. See [safe parser contract](docs/SRR_PARSER.en.md). Missing diagnostics never prove synthesis succeeded.
+
+## Resource and preliminary timing metrics
+
+Issue #5 adds conservative extraction only from explicitly labelled sections. Unknown or ambiguous values remain null, and Synplify estimates are **not** post-route timing. See the [metrics contract](docs/METRICS.en.md).

@@ -54,3 +54,7 @@ and real Synplify version compatibility remains NOT_RUN.
 **Confidentiality:** the MCP client may forward returned source paths
 and message fragments to an external AI model. Use confidential
 projects only in approved local/enterprise environments.
+
+## Optional conservative metrics
+
+A small subset of explicitly labelled resources and timing sections is extracted when the grammar and units are unambiguous. See [metrics contract](METRICS.en.md). Unknown values remain null and no licensed Synplify release is claimed supported.
