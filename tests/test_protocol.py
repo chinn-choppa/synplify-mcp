@@ -21,6 +21,15 @@ class ProtocolTests(unittest.TestCase):
                 page = await client.list_tools()
                 self.assertIsNone(page.next_cursor)
                 self.assertEqual({tool.name for tool in page.tools}, EXPECTED_TOOLS)
+                annotations = {tool.name: tool.annotations for tool in page.tools}
+                for name in EXPECTED_TOOLS - {"run_approved_synthesis"}:
+                    self.assertIsNotNone(annotations[name])
+                    self.assertTrue(annotations[name].read_only_hint, name)
+                    self.assertFalse(annotations[name].open_world_hint, name)
+                runner = annotations["run_approved_synthesis"]
+                self.assertFalse(runner.read_only_hint)
+                self.assertTrue(runner.destructive_hint)
+                self.assertFalse(runner.open_world_hint)
                 response = await client.call_tool("server_info", {})
                 self.assertFalse(response.is_error)
                 self.assertEqual(response.structured_content["server"], "synplify-mcp")

@@ -19,7 +19,7 @@ def create_server() -> MCPServer:
     """Создать сервер с минимальным проверяемым интерфейсом."""
     server = MCPServer("synplify-mcp")
 
-    @server.tool()
+    @server.tool(annotations=ToolAnnotations(read_only_hint=True, open_world_hint=False))
     def server_info() -> dict[str, object]:
         """Сообщить о возможностях прототипа без запуска EDA."""
         return {
@@ -33,17 +33,17 @@ def create_server() -> MCPServer:
             "eda_execution_validated": False,
         }
 
-    @server.tool()
+    @server.tool(annotations=ToolAnnotations(read_only_hint=True, open_world_hint=False))
     def tool_status() -> dict[str, object]:
         """Найти установленный инструмент, не выполняя его."""
         return inspect_tool("synplify_pro", "SYNPLIFY_MCP_EXECUTABLE")
 
-    @server.tool()
+    @server.tool(annotations=ToolAnnotations(read_only_hint=True, open_world_hint=False))
     def parse_diagnostics(text: str, limit: int = 200) -> dict[str, object]:
         """Распознать известные диагностические строки с ограничением размера."""
         return parse_diagnostics_text(text, "synplify_pro", limit)
 
-    @server.tool()
+    @server.tool(annotations=ToolAnnotations(read_only_hint=True, open_world_hint=False))
     def parse_srr(relative_path: str, encoding: str = "auto", limit: int = 200) -> dict[str, object]:
         """Читать .srr из заранее разрешённого локального каталога, без запуска EDA."""
         return read_srr_report(relative_path, encoding, limit)
@@ -60,7 +60,7 @@ def create_server() -> MCPServer:
         read_only_hint=False,
         destructive_hint=True,
         idempotent_hint=False,
-        open_world_hint=True,
+        open_world_hint=False,
     ))
     def run_approved_synthesis(project_id: str, acknowledge_side_effects: bool = False,
                                timeout_seconds: int = 30) -> dict[str, object]:
