@@ -43,8 +43,10 @@ against concurrent malicious local filesystem changes.
   conservative latch/black-box category.
 - `report_sha256`, `size_bytes` and `encoding` identify the input.
   Unknown `tool_version` and `device` are `null`, not guessed.
-- Utilization and timing remain `NOT_EXTRACTED` until #5. Synplify
-  timing is a preliminary synthesis estimate, never a routed result.
+- Limited explicitly labelled resource and timing tables are parsed when
+  unambiguous. Their states can be `PARSED`, `PARTIAL`, `ABSENT`,
+  `AMBIGUOUS` or `UNSUPPORTED`. See [metrics contract](METRICS.en.md).
+  Synplify timing is a preliminary synthesis estimate, never a routed result.
 
 Supported encodings: UTF-8, UTF-8 BOM, UTF-16 LE/BE BOM, and explicit
 `encoding="cp1252"` for Windows-1252. Malformed bytes cause a
@@ -54,3 +56,7 @@ and real Synplify version compatibility remains NOT_RUN.
 **Confidentiality:** the MCP client may forward returned source paths
 and message fragments to an external AI model. Use confidential
 projects only in approved local/enterprise environments.
+
+## Optional conservative metrics
+
+A small subset of explicitly labelled resources and timing sections is extracted when the grammar and units are unambiguous. See [metrics contract](METRICS.en.md). Unknown values remain null and no licensed Synplify release is claimed supported.

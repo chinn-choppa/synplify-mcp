@@ -62,3 +62,7 @@ vendor-certified grammar or verified compatibility matrix.
 explicit parse-health states and safe workspace restriction. #5 will handle
 version-aware resource and timing normalization separately. Commercial
 product acceptance and exact Synplify version support remain NOT_RUN.
+
+## Further #5 fixtures
+
+The [metric normalization contract](METRICS.en.md) introduces five original synthetic `metrics_*.srr` fixtures covering explicit counts, multi-clock timing, unknown units, contradictory values and missing constraints. No real Synplify release is claimed supported.

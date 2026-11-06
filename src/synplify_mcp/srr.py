@@ -12,6 +12,8 @@ import json
 import os
 import re
 import stat
+
+from .metrics import extract_metrics
 from pathlib import Path, PurePosixPath, PureWindowsPath
 
 MAX_REPORT_BYTES = 1_048_576
@@ -104,7 +106,8 @@ def parse_srr_bytes(
     if type(limit) is not int or not 1 <= limit <= MAX_ITEMS:
         return _error("INVALID_LIMIT", source_path=source_path)
     try:
-        text, codec, offset = _decode(data, encoding)
+        text, codec, bom = _decode(data, encoding)
+        offset = bom
     except ValueError as exc:
         return _error(str(exc), source_path=source_path)
 
@@ -210,6 +213,8 @@ def parse_srr_bytes(
     else:
         health = "PARSED"
 
+    metrics = extract_metrics(text, codec, bom)
+
     return {
         "state": "PARSED",
         "parse_health": health,
@@ -229,10 +234,11 @@ def parse_srr_bytes(
         "output_limited": output_limited,
         "section_count": section_count,
         "sections": sections,
-        "tool_version": None,
-        "device": None,
-        "resources": {"state": "NOT_EXTRACTED"},
-        "timing": {"state": "NOT_EXTRACTED", "kind": "SYNTHESIS_ESTIMATE"},
+        "tool_version": metrics["context"]["tool_version"]["value"],
+        "device": metrics["context"]["device"]["value"],
+        "context": metrics["context"],
+        "resources": metrics["resources"],
+        "timing": metrics["timing"],
         "executed": False,
         "synthesis_status": "UNKNOWN",
     }
