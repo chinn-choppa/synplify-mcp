@@ -290,8 +290,8 @@ def run_approved_project(
         artifacts = _approved_relative(root, entry["artifacts"], suffix=None)
         if not artifacts.is_dir() or not project.is_file():
             return _result("INVALID_PATH")
-        if project == artifacts or artifacts.is_relative_to(project.parent):
-            # Artifact directory must not nest within project source tree.
+        if project.is_relative_to(artifacts):
+            # Не храним утверждённый проект внутри каталога артефактов.
             return _result("INVALID_ARTIFACT_ROOT")
         digest = _read_project_hash(project)
         if digest != entry["sha256"].lower():
