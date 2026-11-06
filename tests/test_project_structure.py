@@ -23,6 +23,7 @@ class ProjectStructureTests(unittest.TestCase):
         self.assertEqual(data["project"]["name"], root.name)
         self.assertIn(root.name, data["project"]["scripts"])
         self.assertIn("mcp==2.3.0", data["project"]["dependencies"])
+        self.assertIn("fastmcp==4.1.6", data["project"]["dependencies"])
 
 
 if __name__ == "__main__":

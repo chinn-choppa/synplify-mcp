@@ -8,6 +8,7 @@ import sys
 import unittest
 
 from mcp import Client, StdioServerParameters
+from fastmcp import Client as FastMCPClient
 from synplify_mcp.server import create_server
 
 EXPECTED_TOOLS = {"server_info", "tool_status", "parse_diagnostics",
@@ -17,8 +18,8 @@ EXPECTED_TOOLS = {"server_info", "tool_status", "parse_diagnostics",
 class ProtocolTests(unittest.TestCase):
     def test_in_memory_mcp_exchange(self) -> None:
         async def check() -> None:
-            async with Client(create_server()) as client:
-                page = await client.list_tools()
+            async with FastMCPClient(create_server()) as client:
+                page = await client.list_tools_mcp()
                 self.assertIsNone(page.next_cursor)
                 self.assertEqual({tool.name for tool in page.tools}, EXPECTED_TOOLS)
                 annotations = {tool.name: tool.annotations for tool in page.tools}
@@ -30,17 +31,17 @@ class ProtocolTests(unittest.TestCase):
                 self.assertFalse(runner.read_only_hint)
                 self.assertTrue(runner.destructive_hint)
                 self.assertFalse(runner.open_world_hint)
-                response = await client.call_tool("server_info", {})
+                response = await client.call_tool_mcp("server_info", {})
                 self.assertFalse(response.is_error)
                 self.assertEqual(response.structured_content["server"], "synplify-mcp")
                 self.assertTrue(response.structured_content["eda_execution_supported"])
                 self.assertFalse(response.structured_content["eda_execution_validated"])
-                parsed = await client.call_tool(
+                parsed = await client.call_tool_mcp(
                     "parse_diagnostics", {"text": "@W: rtl/top.sv(14): Width mismatch"}
                 )
                 self.assertFalse(parsed.is_error)
                 self.assertEqual(parsed.structured_content["count"], 1)
-                invalid = await client.call_tool("parse_diagnostics", {"text": "", "limit": 0})
+                invalid = await client.call_tool_mcp("parse_diagnostics", {"text": "", "limit": 0})
                 self.assertTrue(invalid.is_error)
                 self.assertIsNone(invalid.structured_content)
 

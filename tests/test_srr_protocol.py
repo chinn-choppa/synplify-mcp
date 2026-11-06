@@ -16,6 +16,8 @@ except ImportError:
     Client = None
     StdioServerParameters = None
 
+from fastmcp import Client as FastMCPClient
+
 from synplify_mcp.srr import read_srr_report
 
 
@@ -47,8 +49,8 @@ class SrrProtocolTests(unittest.TestCase):
                 )
                 with patch.dict(os.environ, {"SYNPLIFY_MCP_WORKSPACE": tmp,
                                           "SYNPLIFY_MCP_ENABLE_SYNTHESIS": "0"}):
-                    async with Client(create_server()) as client:
-                        page = await client.list_tools()
+                    async with FastMCPClient(create_server()) as client:
+                        page = await client.list_tools_mcp()
                         self.assertIn("parse_srr", {t.name for t in page.tools})
                         self.assertIn("compare_srr_reports", {t.name for t in page.tools})
                         self.assertIn("run_approved_synthesis", {t.name for t in page.tools})
@@ -57,20 +59,20 @@ class SrrProtocolTests(unittest.TestCase):
                         self.assertIsNotNone(operation.annotations)
                         self.assertFalse(operation.annotations.read_only_hint)
                         self.assertTrue(operation.annotations.destructive_hint)
-                        refused = await client.call_tool(
+                        refused = await client.call_tool_mcp(
                             "run_approved_synthesis",
                             {"project_id": "demo", "acknowledge_side_effects": True}
                         )
                         self.assertFalse(refused.is_error)
                         self.assertEqual(refused.structured_content["state"], "DISABLED")
                         self.assertFalse(refused.structured_content["executed"])
-                        result = await client.call_tool("parse_srr",
+                        result = await client.call_tool_mcp("parse_srr",
                                                         {"relative_path": "synthetic.srr"})
                         self.assertFalse(result.is_error)
                         self.assertEqual(result.structured_content["state"], "PARSED")
                         self.assertEqual(result.structured_content["diagnostic_count"], 1)
                         self.assertEqual(result.structured_content["synthesis_status"], "UNKNOWN")
-                        metrics = await client.call_tool(
+                        metrics = await client.call_tool_mcp(
                             "parse_srr", {"relative_path": "metrics.srr"}
                         )
                         self.assertFalse(metrics.is_error)
@@ -83,7 +85,7 @@ class SrrProtocolTests(unittest.TestCase):
                         self.assertEqual(payload["timing"]["clocks"][0]["clock"], "clk_mcp")
                         self.assertEqual(payload["timing"]["clocks"][0]["slack"]["unit"], "ns")
                         self.assertEqual(payload["synthesis_status"], "UNKNOWN")
-                        comparison = await client.call_tool(
+                        comparison = await client.call_tool_mcp(
                             "compare_srr_reports",
                             {"baseline_path": "metrics.srr", "candidate_path": "metrics2.srr"},
                         )
@@ -91,7 +93,7 @@ class SrrProtocolTests(unittest.TestCase):
                         self.assertEqual(comparison.structured_content["state"], "UNVERIFIED")
                         self.assertFalse(comparison.structured_content["executed"])
                         self.assertEqual(comparison.structured_content["synthesis_status"], "UNKNOWN")
-                        denied = await client.call_tool("parse_srr",
+                        denied = await client.call_tool_mcp("parse_srr",
                                                        {"relative_path": "../secret.srr"})
                         self.assertFalse(denied.is_error)
                         self.assertEqual(denied.structured_content["state"], "ERROR")

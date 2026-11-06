@@ -25,14 +25,14 @@ class MCPStub:
 class ServerStubTests(unittest.TestCase):
     def test_tool_registration_and_responses(self):
         mcp = types.ModuleType("mcp")
-        server_mod = types.ModuleType("mcp.server")
-        server_mod.MCPServer = MCPStub
+        fastmcp_mod = types.ModuleType("fastmcp")
+        fastmcp_mod.FastMCP = MCPStub
         types_mod = types.ModuleType("mcp.types")
         types_mod.ToolAnnotations = lambda **kwargs: types.SimpleNamespace(**kwargs)
-        mcp.server = server_mod
+        
         target = "synplify_mcp.server"
-        with patch.dict(sys.modules, {"mcp": mcp, "mcp.server": server_mod,
-                                      "mcp.types": types_mod}):
+        with patch.dict(sys.modules, {"mcp": mcp, "mcp.types": types_mod,
+                                      "fastmcp": fastmcp_mod}):
             sys.modules.pop(target, None)
             try:
                 module = importlib.import_module(target)

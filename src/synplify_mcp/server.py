@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 
-from mcp.server import MCPServer
+from fastmcp import FastMCP
 from mcp.types import ToolAnnotations
 
 from . import __version__
@@ -15,9 +15,9 @@ from .runtime import inspect_tool
 from .srr import read_srr_report
 
 
-def create_server() -> MCPServer:
+def create_server() -> FastMCP:
     """Создать сервер с минимальным проверяемым интерфейсом."""
-    server = MCPServer("synplify-mcp")
+    server = FastMCP("synplify-mcp")
 
     @server.tool(annotations=ToolAnnotations(read_only_hint=True, open_world_hint=False))
     def server_info() -> dict[str, object]:
