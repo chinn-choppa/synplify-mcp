@@ -134,7 +134,7 @@ def extract_metrics(text: str, codec: str, bom: int) -> dict[str, Any]:
                     flag("METRIC_LINE_TOO_LONG")
                 continue
 
-            tool = _TO.fullmatch(line)
+            tool = _TOOL.fullmatch(line)
             device = _DEVICE.fullmatch(line)
             if tool and len(tool_rows) < 8:
                 tool_rows.append((tool[1][:128], _source(raw, number, pos, "CONTEXT")))
