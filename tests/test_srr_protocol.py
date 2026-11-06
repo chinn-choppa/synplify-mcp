@@ -29,6 +29,14 @@ class SrrProtocolTests(unittest.TestCase):
                 path = Path(tmp) / "synthetic.srr"
                 path.write_text("@W: DEMO001 : rtl/x.sv(5): Inferred latch\n",
                                 encoding="utf-8")
+                Path(tmp, "metrics.srr").write_text(
+                    "Synplify Pro Version: MOCK\n"
+                    "Resource Usage Report\nTotal LUTs: 4\n"
+                    "START TIMING REPORT\nPerformance Summary\n"
+                    "Clock Requested Period (ns) Estimated Period (ns) Slack (ns)\n"
+                    "clk_mcp 10.0 11.0 -1.0\nEND TIMING REPORT\n",
+                    encoding="utf-8",
+                )
                 with patch.dict(os.environ, {"SYNPLIFY_MCP_WORKSPACE": tmp}):
                     async with Client(create_server()) as client:
                         page = await client.list_tools()
@@ -39,6 +47,19 @@ class SrrProtocolTests(unittest.TestCase):
                         self.assertEqual(result.structured_content["state"], "PARSED")
                         self.assertEqual(result.structured_content["diagnostic_count"], 1)
                         self.assertEqual(result.structured_content["synthesis_status"], "UNKNOWN")
+                        metrics = await client.call_tool(
+                            "parse_srr", {"relative_path": "metrics.srr"}
+                        )
+                        self.assertFalse(metrics.is_error)
+                        payload = metrics.structured_content
+                        self.assertEqual(payload["tool_version"], "MOCK")
+                        self.assertEqual(payload["resources"]["state"], "PARSED")
+                        self.assertEqual(payload["resources"]["items"][0]["used"]["value"], 4)
+                        self.assertEqual(payload["timing"]["kind"], "SYNTHESIS_ESTIMATE")
+                        self.assertEqual(payload["timing"]["state"], "PARSED")
+                        self.assertEqual(payload["timing"]["clocks"][0]["clock"], "clk_mcp")
+                        self.assertEqual(payload["timing"]["clocks"][0]["slack"]["unit"], "ns")
+                        self.assertEqual(payload["synthesis_status"], "UNKNOWN")
                         denied = await client.call_tool("parse_srr",
                                                        {"relative_path": "../secret.srr"})
                         self.assertFalse(denied.is_error)
