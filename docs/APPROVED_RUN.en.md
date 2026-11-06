@@ -106,3 +106,11 @@ Synplify `.prj` may generate other outputs at locations defined
 in its trusted project configuration. Public CI tests mocked
 executables and refusals; real licensed EDA acceptance, reported
 versions and results remain `NOT_RUN`.
+
+### Windows script protection
+
+On Windows, `SYNPLIFY_MCP_EXECUTABLE` must point to an `.exe` binary.
+`.bat`, `.cmd`, and `.ps1` are rejected: Windows can dispatch batch
+files through a command interpreter even with `shell=False`. This
+checks the file type, **not** authenticity; the operator is responsible
+for selecting a trusted vendor executable.
