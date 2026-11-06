@@ -1,0 +1,4 @@
+Synthetic example – not produced by Synplify Pro
+Compiler Report
+@W: rtl/top.sv(14): Width mismatch
+@E: rtl/top.sv(28): Multiple drivers found
