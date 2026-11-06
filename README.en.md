@@ -4,7 +4,7 @@
 
 Community-focused, local-first MCP adapter for **Synopsys Synplify Pro**. This is an independently maintained open-source project, not an official vendor product.
 
-**Status: experimental bootstrap (0.0.1).** The initial release exposes a minimal MCP server, installation detection and bounded diagnostic parsing. It does **not** execute synthesis, simulation, hardware programming or arbitrary shell commands.
+**Status: experimental bootstrap (0.0.1).** The initial release exposes a minimal MCP server, installation detection and bounded diagnostic parsing. By default it does **not** execute synthesis or simulation. Experimental execution of operator-approved projects requires an explicit opt-in; no vendor EDA success has been validated. Arbitrary shell/Tcl arguments remain unavailable.
 
 ## Setup
 
