@@ -17,7 +17,7 @@ uv sync
 uv run synplify-mcp
 ```
 
-MCP tools: `server_info`, `tool_status`, `parse_diagnostics`. Use a local stdio-capable MCP client and configure it to launch the installed command. A real MCP client test is separate from Python unit tests.
+MCP tools: `server_info`, `tool_status`, `parse_diagnostics`, `parse_srr`. Use a local stdio-capable MCP client and configure it to launch the installed command. A real MCP client test is separate from Python unit tests.
 
 ## Development
 
@@ -33,3 +33,7 @@ Licensed under Apache-2.0. No proprietary EDA executables, licenses or private p
 ## Format research
 
 [Report format inventory and synthetic fixture provenance](docs/REPORT_FORMATS.en.md).
+
+## Reading .srr reports (experimental)
+
+The `parse_srr` tool reads only files inside an operator-approved `SYNPLIFY_MCP_WORKSPACE`. See [safe parser contract](docs/SRR_PARSER.en.md). Missing diagnostics never prove synthesis succeeded.
