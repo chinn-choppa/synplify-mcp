@@ -41,3 +41,7 @@ The `parse_srr` tool reads only files inside an operator-approved `SYNPLIFY_MCP_
 ## Resource and preliminary timing metrics
 
 Issue #5 adds conservative extraction only from explicitly labelled sections. Unknown or ambiguous values remain null, and Synplify estimates are **not** post-route timing. See the [metrics contract](docs/METRICS.en.md).
+
+## Experimental approved-project execution
+
+`run_approved_synthesis` (#6) is disabled by default. It requires an operator-owned project allowlist and checks the `.prj` SHA-256; it never accepts arbitrary Tcl/shell arguments. The project can itself execute Tcl, so this is **not a sandbox**. Exit zero is not EDA success. Read the [operator guide](docs/APPROVED_RUN.en.md).
