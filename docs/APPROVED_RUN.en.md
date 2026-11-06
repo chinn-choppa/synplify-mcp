@@ -106,3 +106,11 @@ Synplify `.prj` may generate other outputs at locations defined
 in its trusted project configuration. Public CI tests mocked
 executables and refusals; real licensed EDA acceptance, reported
 versions and results remain `NOT_RUN`.
+
+### Windows safety
+
+Only `.exe` binaries are accepted for real launches. `.bat` and `.cmd`
+files are rejected because Windows may dispatch those via a command
+interpreter even with `shell=False`. The server advertises
+`eda_execution_supported=true` for the opt-in interface, **not** a
+validated commercial tool (`eda_vendor_test="NOT_RUN"`).

@@ -116,6 +116,14 @@ class ApprovedProjectTests(unittest.TestCase):
             self.assertEqual(self.run_mock()["state"], "INVALID_EXECUTABLE")
         self.assertFalse(self.calls)
 
+    @unittest.skipUnless(os.name == "nt", "Windows executable extension gate")
+    def test_command_scripts_cannot_be_configured_as_executable(self):
+        bad = self.root / "malicious.cmd"
+        bad.write_text("@echo off", encoding="utf-8")
+        with patch.dict(os.environ, {"SYNPLIFY_MCP_EXECUTABLE": str(bad)}):
+            self.assertEqual(self.run_mock()["state"], "INVALID_EXECUTABLE")
+        self.assertEqual(self.calls, [])
+
     def test_project_modification_and_manifest_ambiguity(self):
         self.project.write_text("modified", encoding="utf-8")
         self.assertEqual(self.run_mock()["state"], "PROJECT_CHANGED")

@@ -269,6 +269,10 @@ def run_approved_project(
     executable = Path(configured_exe)
     if not executable.is_absolute() or executable.is_symlink() or not executable.is_file():
         return _result("INVALID_EXECUTABLE")
+    # On Windows .cmd/.bat may invoke the command processor even with
+    # shell=False. Permit only a binary .exe for a real EDA launch.
+    if os.name == "nt" and executable.suffix.lower() != ".exe":
+        return _result("INVALID_EXECUTABLE")
     if os.name != "nt" and not os.access(executable, os.X_OK):
         return _result("INVALID_EXECUTABLE")
     manifest_path = os.environ.get(MANIFEST_ENV)

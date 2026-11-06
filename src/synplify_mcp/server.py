@@ -1,4 +1,4 @@
-"""Read-only stdio MCP. В этой версии нет запуска EDA-команд."""
+"""Локальный stdio MCP с операторским разрешением на пакетный синтез."""
 
 from __future__ import annotations
 
@@ -27,7 +27,9 @@ def create_server() -> MCPServer:
             "stage": "bootstrap",
             "operations": ["server_info", "tool_status", "parse_diagnostics", "parse_srr", "run_approved_synthesis"],
             "eda_execution_enabled": os.getenv(ENABLE_ENV) == "1",
-            "eda_execution_supported": False,
+            "eda_execution_supported": True,
+            "eda_execution_mode": "OPERATOR_APPROVED_PROJECT_ONLY",
+            "eda_vendor_test": "NOT_RUN",
         }
 
     @server.tool()

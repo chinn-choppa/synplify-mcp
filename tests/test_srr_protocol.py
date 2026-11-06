@@ -60,6 +60,22 @@ class SrrProtocolTests(unittest.TestCase):
                         self.assertEqual(payload["timing"]["clocks"][0]["clock"], "clk_mcp")
                         self.assertEqual(payload["timing"]["clocks"][0]["slack"]["unit"], "ns")
                         self.assertEqual(payload["synthesis_status"], "UNKNOWN")
+                        # Test new EDA tool with real MCP SDK while server launch
+                        # remains disabled; no vendor executable is invoked.
+                        with patch.dict(os.environ, {
+                            "SYNPLIFY_MCP_ENABLE_SYNTHESIS": "0"
+                        }):
+                            info = await client.call_tool("server_info", {})
+                            self.assertFalse(info.is_error)
+                            self.assertTrue(info.structured_content["eda_execution_supported"])
+                            self.assertFalse(info.structured_content["eda_execution_enabled"])
+                            refused = await client.call_tool("run_approved_synthesis", {
+                                "project_id": "demo",
+                                "acknowledge_side_effects": True,
+                            })
+                            self.assertFalse(refused.is_error)
+                            self.assertEqual(refused.structured_content["state"], "DISABLED")
+                            self.assertFalse(refused.structured_content["executed"])
                         denied = await client.call_tool("parse_srr",
                                                        {"relative_path": "../secret.srr"})
                         self.assertFalse(denied.is_error)
