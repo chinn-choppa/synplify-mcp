@@ -41,3 +41,7 @@ The `parse_srr` tool reads only files inside an operator-approved `SYNPLIFY_MCP_
 ## Resource and preliminary timing metrics
 
 Issue #5 adds conservative extraction only from explicitly labelled sections. Unknown or ambiguous values remain null, and Synplify estimates are **not** post-route timing. See the [metrics contract](docs/METRICS.en.md).
+
+## Comparing report snapshots
+
+The `compare_srr_reports` tool (#7) compares authorized reports with version/device/unit gates. Resource deltas require compatible, known evidence. Timing changes are **observed only**, without numerical deltas until full constraint equivalence is established. Read the [comparison contract](docs/COMPARE.en.md).
