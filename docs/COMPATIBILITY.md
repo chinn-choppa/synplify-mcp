@@ -2,8 +2,8 @@
 
 | Уровень | Ожидается | Подтверждено на момент создания |
 | --- | --- | --- |
-| Python | 3.11+ | Синтаксис проверяется локально на Python 3.13 |
-| MCP | SDK v2, stdio | Нативная приёмка MCP `NOT_RUN` |
+| Python | 3.11+ | CI: Python 3.11/3.13 на Windows/Linux; Python 3.15 `NOT_RUN` |
+| MCP | SDK 2.3.0, stdio | `MCP_TOOL_PASS`: Windows/Linux, Python 3.11/3.13, синтетический `parse_srr` через реальный клиент; см. CI PR #10 |
 | Windows | Планируется | EDA `NOT_RUN` |
 | Linux | Планируется | EDA `NOT_RUN` |
 | Synopsys Synplify Pro | Разные версии, после исследования | `NOT_RUN` |

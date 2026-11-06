@@ -17,7 +17,7 @@ uv sync
 uv run synplify-mcp
 ```
 
-MCP tools: `server_info`, `tool_status`, `parse_diagnostics`. Use a local stdio-capable MCP client and configure it to launch the installed command. A real MCP client test is separate from Python unit tests.
+MCP tools: `server_info`, `tool_status`, `parse_diagnostics`, `parse_srr`. Use a local stdio-capable MCP client and configure it to launch the installed command. A real MCP client test is separate from Python unit tests.
 
 ## Development
 
