@@ -127,6 +127,24 @@ class ReportMetricsTests(unittest.TestCase):
         self.assertIn("TIMING_SECTION_UNTERMINATED", result["timing"]["issues"])
         self.assertEqual(result["synthesis_status"], "UNKNOWN")
 
+
+    def test_timing_numbers_outside_performance_summary_are_ignored(self) -> None:
+        r = parse_srr_bytes(
+            b"START TIMING REPORT\n"
+            b"Clock Requested Period (ns) Estimated Period (ns) Slack (ns)\n"
+            b"clk_fake 10 11 -1\nEND TIMING REPORT\n"
+        )
+        self.assertEqual(r["timing"]["clocks"], [])
+        self.assertEqual(r["timing"]["state"], "UNSUPPORTED")
+
+    def test_resources_outside_resource_section_are_ignored(self) -> None:
+        r = parse_srr_bytes(
+            b"Compiler Report\nTotal LUTs: 999\n"
+            b"Resource Used Available\nLUT 5 10\n"
+        )
+        self.assertEqual(r["resources"]["state"], "ABSENT")
+        self.assertEqual(r["resources"]["items"], [])
+
     def test_only_whitelisted_resource_names(self) -> None:
         result = parse_srr_bytes(
             b"Resource Usage Report\n"

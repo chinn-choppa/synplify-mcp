@@ -112,6 +112,7 @@ def extract_metrics(text: str, codec: str, bom: int) -> dict[str, Any]:
 
     timing_started = False
     timing_ended = False
+    performance_seen = False
     timing_active = False
     resource_active = False
     resource_header = False
@@ -152,6 +153,7 @@ def extract_metrics(text: str, codec: str, bom: int) -> dict[str, Any]:
                 timing_active = False
                 timing_header = None
                 timing_header_evidence = None
+                performance_seen = False
                 continue
 
             if upper in {"START TIMING REPORT", "START OF TIMING REPORT"}:
@@ -160,6 +162,7 @@ def extract_metrics(text: str, codec: str, bom: int) -> dict[str, Any]:
                 timing_started = timing_active = timing_section_seen = True
                 timing_header = None
                 timing_header_evidence = None
+                performance_seen = False
                 resource_active = resource_header = False
                 continue
             if upper in _END_TIMING:
@@ -168,6 +171,7 @@ def extract_metrics(text: str, codec: str, bom: int) -> dict[str, Any]:
                 timing_active = False
                 timing_header = None
                 timing_header_evidence = None
+                performance_seen = False
                 continue
 
             if resource_active:
@@ -204,10 +208,11 @@ def extract_metrics(text: str, codec: str, bom: int) -> dict[str, Any]:
             if not timing_active:
                 continue
             if upper == "PERFORMANCE SUMMARY":
+                performance_seen = True
                 timing_header = None
                 timing_header_evidence = None
                 continue
-            header = _TIMING_HEADER.fullmatch(line)
+            header = _TIMING_HEADER.fullmatch(line) if performance_seen else None
             if header:
                 timing_header = header
                 timing_header_evidence = _source(raw, number, pos, "TIMING")
