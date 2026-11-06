@@ -82,3 +82,7 @@ but the extra dependency cost is significant for six simple tools.
 Keep the experimental PR as draft. Before recommending rollout,
 demonstrate a genuine need for middleware/composition or investigate
 a `fastmcp-slim` subset with appropriate optional extras.
+
+## Follow-up slim evaluation
+
+The tested `fastmcp-slim[server]` profile, separate `client` dev group, two synthetic capability probes and adoption recommendation: [FASTMCP_SLIM_REVIEW.en.md](FASTMCP_SLIM_REVIEW.en.md).

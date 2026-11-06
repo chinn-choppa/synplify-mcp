@@ -57,3 +57,7 @@ All six operations are assembled and tested on Windows/Linux × Python 3.11/3.13
 ## FastMCP 4 experiment
 
 This isolated branch replaces only the server adapter with **FastMCP 4.1.6**, while keeping **official MCP SDK 2.3.0** as an independent stdio protocol client. Parsers, report comparison and the approved-project executor are unchanged. No merge into `main` or the integration PR #15 has occurred. See [migration experiment, evidence and acceptance criteria](docs/FASTMCP_EXPERIMENT.en.md).
+
+## `fastmcp-slim` evaluation
+
+The production-only FastMCP slim server works across the tested OS/Python matrix but saves only one installed package versus full FastMCP (62 vs 63); the original MCP SDK installs 29. All 12 development and production-only checks passed. See the [dependency analysis and adoption recommendation](docs/FASTMCP_SLIM_REVIEW.en.md).

@@ -38,3 +38,14 @@ uv run synplify-mcp
 ## Проверка FastMCP (экспериментальная ветка)
 
 `uv sync` устанавливает FastMCP 4.1.6 и официальный MCP SDK 2.3.0. Внутрипроцессный клиент `fastmcp.Client` проверяет список инструментов, аннотации и контракты аргументов. Независимый клиент `mcp.Client` выполняет настоящие `tools/list` и `tools/call` через дочерний процесс `stdio`, включая отказ от неожиданных аргументов и `DISABLED` при выключенном синтезе. Доказательства и сравнительный состав зависимостей приведены в [FASTMCP_EXPERIMENT.md](FASTMCP_EXPERIMENT.md).
+
+## Отдельная проверка производственных зависимостей
+
+Для FastMCP slim CI устанавливает только `[server]` без группы `dev` и использует **независимый** клиент официального SDK:
+
+```bash
+uv sync --no-dev
+uv run --no-dev --no-sync python -m unittest discover -s tests -p test_runtime_only.py -v
+```
+
+Полная матрица и результаты: [FASTMCP_SLIM_REVIEW.md](FASTMCP_SLIM_REVIEW.md).

@@ -18,3 +18,5 @@
 - Process exit code zero never establishes verified vendor synthesis success
 
 - Experimental FastMCP 4.1.6 server adapter; EDA logic unchanged and official SDK client still validates stdio. Not merged; see [experiment](docs/FASTMCP_EXPERIMENT.en.md).
+
+- Experimental `fastmcp-slim` server-only dependency split; independent production-only stdio tests, isolated middleware/composition probes and the bilingual [slim evaluation](docs/FASTMCP_SLIM_REVIEW.en.md). Migration to `main` is not recommended at this stage.
