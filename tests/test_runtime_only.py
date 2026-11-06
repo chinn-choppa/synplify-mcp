@@ -28,11 +28,11 @@ class RuntimeOnlyTests(unittest.TestCase):
         async def check() -> None:
             with tempfile.TemporaryDirectory() as tmp:
                 Path(tmp, "base.srr").write_text(
-                    "Compiler Report\\n@W: DEMO001 : top.sv(2): demo warning\\n",
+                    "Compiler Report\n@W: DEMO001 : top.sv(2): demo warning\n",
                     encoding="utf-8",
                 )
                 Path(tmp, "next.srr").write_text(
-                    "Compiler Report\\n@E: DEMO002 : top.sv(3): demo error\\n",
+                    "Compiler Report\n@E: DEMO002 : top.sv(3): demo error\n",
                     encoding="utf-8",
                 )
                 params = StdioServerParameters(
