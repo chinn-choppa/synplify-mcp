@@ -11,7 +11,10 @@ requires-python = ">=3.11"
 license = "Apache-2.0"
 authors = [{name = "chinn-choppa"}]
 keywords = ["mcp", "fpga", "rtl", "eda", "synplify_pro"]
-dependencies = ["fastmcp==4.1.6", "mcp==2.3.0"]
+dependencies = ["fastmcp-slim[server]==4.1.6", "mcp==2.3.0"]
+
+[dependency-groups]
+dev = ["fastmcp-slim[client]==4.1.6"]
 
 [project.scripts]
 synplify-mcp = "synplify_mcp.server:main"

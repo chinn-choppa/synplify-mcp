@@ -24,3 +24,14 @@ SHA-256, exit status and artifacts. Until performed it remains `NOT_RUN`.
 ## FastMCP experiment
 
 `uv sync` pins FastMCP 4.1.6 and official MCP SDK 2.3.0. The in-memory `fastmcp.Client` validates tool enumeration, annotations and schemas. The independent official `mcp.Client` invokes real subprocess `stdio` `tools/list`/`tools/call`, including strict unexpected-input rejection and default-off synthesis. See the [reproducible matrix and dependency comparison](FASTMCP_EXPERIMENT.en.md).
+
+## Production-only dependency gate
+
+The FastMCP slim branch performs a second CI job with `dev` extras excluded:
+
+```bash
+uv sync --no-dev
+uv run --no-dev --no-sync python -m unittest discover -s tests -p test_runtime_only.py -v
+```
+
+This ensures a standalone server and the official SDK stdio client work without the optional FastMCP test client. [Complete results](FASTMCP_SLIM_REVIEW.en.md).
