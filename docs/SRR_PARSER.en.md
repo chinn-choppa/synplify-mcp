@@ -24,7 +24,7 @@ uv run synplify-mcp
 The MCP argument is a **relative** `/`-separated path, e.g.
 `reports/build.srr`. Absolute paths, traversal, symlink escape,
 non-.srr files and inputs larger than 1 MiB are rejected.
-Line count, output size and message count are also bounded.
+Line count, output size (64 KiB JSON diagnostics budget) and message count are also bounded.
 The workspace is considered trusted; this is not a hardened sandbox
 against concurrent malicious local filesystem changes.
 

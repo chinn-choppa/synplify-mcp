@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import io
+import json
 import os
 import re
 import stat
@@ -19,6 +20,7 @@ MAX_LINES = 20_000
 MAX_RAW_CHARS = 4_096
 MAX_MESSAGE_CHARS = 2_048
 MAX_SECTIONS = 100
+MAX_DIAGNOSTIC_OUTPUT_BYTES = 65_536
 
 _DIAGNOSTIC = re.compile(r"^\s*@(?P<level>[EWIN]):\s*(?P<body>.*)$")
 _CODE = re.compile(r"^(?P<code>[A-Za-z][A-Za-z0-9_]{1,14}\d[A-Za-z0-9_]*)\s*:\s*(?P<body>.*)$")
@@ -113,6 +115,8 @@ def parse_srr_bytes(
     unrecognized_markers = 0
     oversized_lines = 0
     truncated_messages = 0
+    diagnostic_output_bytes = 0
+    output_limited = False
     section_count = 0
     current_section: str | None = None
     has_content = False
@@ -173,7 +177,7 @@ def parse_srr_bytes(
 
             if len(body) > MAX_MESSAGE_CHARS:
                 truncated_messages += 1
-            items.append({
+            item = {
                 "severity": _SEVERITY[match["level"]],
                 "code": code,
                 "category": _category(body),
@@ -186,10 +190,17 @@ def parse_srr_bytes(
                 "report_line": line_count,
                 "byte_offset": start,
                 "section": current_section,
-            })
+            }
+            item_size = len(json.dumps(item, ensure_ascii=False).encode("utf-8"))
+            if diagnostic_output_bytes + item_size > MAX_DIAGNOSTIC_OUTPUT_BYTES:
+                output_limited = True
+                continue
+            diagnostic_output_bytes += item_size
+            items.append(item)
 
     truncated = (total > len(items) or oversized_lines > 0
-                 or truncated_messages > 0 or section_count > MAX_SECTIONS)
+                 or truncated_messages > 0 or section_count > MAX_SECTIONS
+                 or output_limited)
     if not has_content:
         health = "EMPTY"
     elif unrecognized_markers or truncated:
@@ -214,6 +225,8 @@ def parse_srr_bytes(
         "unrecognized_markers": unrecognized_markers,
         "oversized_lines": oversized_lines,
         "truncated_messages": truncated_messages,
+        "diagnostic_output_bytes": diagnostic_output_bytes,
+        "output_limited": output_limited,
         "section_count": section_count,
         "sections": sections,
         "tool_version": None,

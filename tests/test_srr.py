@@ -143,6 +143,17 @@ class ParseSrrTests(unittest.TestCase):
         self.assertTrue(extra["truncated"])
         self.assertEqual(extra["parse_health"], "PARTIAL")
 
+
+    def test_total_json_diagnostic_output_budget(self) -> None:
+        messages = ("@W: " + "X" * 3_000 + "\n") * 200
+        result = parse_srr_bytes(messages.encode("utf-8"))
+        self.assertEqual(result["diagnostic_count"], 200)
+        self.assertLess(len(result["diagnostics"]), 200)
+        self.assertLessEqual(result["diagnostic_output_bytes"], 65_536)
+        self.assertTrue(result["output_limited"])
+        self.assertTrue(result["truncated"])
+        self.assertEqual(result["parse_health"], "PARTIAL")
+
     def test_raw_preserves_leading_spaces(self) -> None:
         original = "  @W: some warning   "
         result = parse_srr_bytes((original + "\r\n").encode("utf-8"))
