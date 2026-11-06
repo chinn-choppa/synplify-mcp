@@ -17,7 +17,7 @@ uv sync
 uv run synplify-mcp
 ```
 
-MCP tools: `server_info`, `tool_status`, `parse_diagnostics`, `parse_srr`. Use a local stdio-capable MCP client and configure it to launch the installed command. A real MCP client test is separate from Python unit tests.
+MCP tools: `server_info`, `tool_status`, `parse_diagnostics`, `parse_srr`, `compare_srr_reports`, `run_approved_synthesis` (default-off). Use a local stdio-capable MCP client and configure it to launch the installed command. A real MCP client test is separate from Python unit tests.
 
 ## Development
 
@@ -26,7 +26,7 @@ python -m unittest discover -s tests -v
 python -m compileall -q src tests
 ```
 
-Review [architecture](docs/ARCHITECTURE.en.md), [roadmap](docs/ROADMAP.en.md) and [security](SECURITY.md). Russian is used for most engineering documentation; international contributions are welcome, including improvements to English documentation.
+Review [architecture](docs/ARCHITECTURE.en.md), [roadmap](docs/ROADMAP.en.md) and [security](SECURITY.en.md). Russian is used for most engineering documentation; international contributions are welcome, including improvements to English documentation.
 
 Licensed under Apache-2.0. No proprietary EDA executables, licenses or private project data are distributed here.
 
@@ -53,3 +53,7 @@ Issue #5 adds conservative extraction only from explicitly labelled sections. Un
 ## Full integration verification
 
 All six operations are assembled and tested on Windows/Linux × Python 3.11/3.13/3.15.2. See [integration review](docs/INTEGRATION_REVIEW.en.md). This does not establish licensed Synplify acceptance or merge anything into `main`.
+
+## FastMCP 4 experiment
+
+This isolated branch replaces only the server adapter with **FastMCP 4.1.6**, while keeping **official MCP SDK 2.3.0** as an independent stdio protocol client. Parsers, report comparison and the approved-project executor are unchanged. No merge into `main` or the integration PR #15 has occurred. See [migration experiment, evidence and acceptance criteria](docs/FASTMCP_EXPERIMENT.en.md).

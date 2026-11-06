@@ -13,3 +13,7 @@
 
 Discovery or a vendor process exit code does **not** verify commercial compatibility.
 Preliminary Synplify timing is not post-place-and-route timing for any FPGA family.
+
+## FastMCP server experiment
+
+The `experiment/fastmcp-v4` branch pins `fastmcp==4.1.6` as the server framework and `mcp==2.3.0` as the independent subprocess stdio protocol client. The original Python/OS CI matrix is reused. This is not licensed Synplify product acceptance. See [experiment rationale and evidence](FASTMCP_EXPERIMENT.en.md).
