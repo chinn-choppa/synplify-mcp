@@ -7,12 +7,30 @@ import os
 import sys
 import unittest
 
-from mcp import Client, StdioServerParameters
 from fastmcp import Client as FastMCPClient
+from mcp import Client, StdioServerParameters
 from synplify_mcp.server import create_server
 
 EXPECTED_TOOLS = {"server_info", "tool_status", "parse_diagnostics",
                   "parse_srr", "compare_srr_reports", "run_approved_synthesis"}
+EXPECTED_REQUIRED = {
+    "server_info": set(),
+    "tool_status": set(),
+    "parse_diagnostics": {"text"},
+    "parse_srr": {"relative_path"},
+    "compare_srr_reports": {"baseline_path", "candidate_path"},
+    "run_approved_synthesis": {"project_id"},
+}
+
+
+def assert_schema_contract(case: unittest.TestCase, tools: list) -> None:
+    case.assertEqual({tool.name for tool in tools}, EXPECTED_TOOLS)
+    for tool in tools:
+        schema = tool.input_schema
+        case.assertEqual(schema["type"], "object", tool.name)
+        case.assertEqual(set(schema.get("required", [])),
+                         EXPECTED_REQUIRED[tool.name], tool.name)
+
 
 
 class ProtocolTests(unittest.TestCase):
@@ -21,7 +39,7 @@ class ProtocolTests(unittest.TestCase):
             async with FastMCPClient(create_server()) as client:
                 page = await client.list_tools_mcp()
                 self.assertIsNone(page.next_cursor)
-                self.assertEqual({tool.name for tool in page.tools}, EXPECTED_TOOLS)
+                assert_schema_contract(self, page.tools)
                 annotations = {tool.name: tool.annotations for tool in page.tools}
                 for name in EXPECTED_TOOLS - {"run_approved_synthesis"}:
                     self.assertIsNotNone(annotations[name])
@@ -47,12 +65,27 @@ class ProtocolTests(unittest.TestCase):
 
         asyncio.run(asyncio.wait_for(check(), timeout=25))
 
+    def test_fastmcp_rejects_extra_parameters(self) -> None:
+        async def check() -> None:
+            async with FastMCPClient(create_server()) as client:
+                for tool_name, arguments in (
+                    ("server_info", {"unexpected": 1}),
+                    ("tool_status", {"command": "DO_NOT_EXECUTE"}),
+                    ("parse_diagnostics", {"text": "", "command": "DO_NOT_EXECUTE"}),
+                ):
+                    with self.subTest(tool=tool_name):
+                        result = await client.call_tool_mcp(tool_name, arguments)
+                        self.assertTrue(result.is_error)
+                        self.assertIsNone(result.structured_content)
+
+        asyncio.run(asyncio.wait_for(check(), timeout=25))
+
     def test_real_stdio_mcp_exchange(self) -> None:
         async def check() -> None:
             params = StdioServerParameters(
                 command=sys.executable,
                 args=["-m", "synplify_mcp"],
-                env=os.environ.copy(),
+                env=dict(os.environ, SYNPLIFY_MCP_ENABLE_SYNTHESIS="0"),
             )
             async with Client(params) as client:
                 page = await client.list_tools()
@@ -61,6 +94,20 @@ class ProtocolTests(unittest.TestCase):
                 response = await client.call_tool("server_info", {})
                 self.assertFalse(response.is_error)
                 self.assertEqual(response.structured_content["stage"], "experimental")
+                self.assertFalse(response.structured_content["eda_execution_enabled"])
+                rejected = await client.call_tool(
+                    "run_approved_synthesis",
+                    {"project_id": "demo", "acknowledge_side_effects": True,
+                     "arbitrary_command": "DO_NOT_EXECUTE"},
+                )
+                self.assertTrue(rejected.is_error)
+                self.assertIsNone(rejected.structured_content)
+                refusal = await client.call_tool(
+                    "run_approved_synthesis",
+                    {"project_id": "demo", "acknowledge_side_effects": True},
+                )
+                self.assertFalse(refusal.is_error)
+                self.assertEqual(refusal.structured_content["state"], "DISABLED")
 
         asyncio.run(asyncio.wait_for(check(), timeout=25))
 
