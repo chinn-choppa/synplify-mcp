@@ -34,3 +34,7 @@
 ## Экспериментальные метрики ресурсов и timing
 
 `parse_srr` может возвращать дополнительно `context`, `resources`, `timing`; значения принимаются только из явно подписанных секций и единиц. Описание ограничений и семантики: [METRICS.md](METRICS.md). `timing.kind=SYNTHESIS_ESTIMATE`, не post-route timing; `synthesis_status=UNKNOWN`.
+
+## `run_approved_synthesis(project_id, acknowledge_side_effects=false, timeout_seconds=30)`
+
+Операция с **побочными эффектами**, по умолчанию запрещена. Только операторский манифест с SHA-256 проекта, настройка сервера через переменные окружения, фиксированный `synplify_pro -batch <approved.prj>`, без свободных аргументов Tcl/shell. `acknowledge_side_effects` **не** равнозначен подтверждению человеком; согласие контролирует MCP-клиент. `PROCESS_EXIT_ZERO_UNVERIFIED` не равен `EDA_PASS`. Ограничения изоляции и контракт состояний: [APPROVED_RUN.md](APPROVED_RUN.md).

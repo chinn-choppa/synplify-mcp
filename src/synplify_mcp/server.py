@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
+import os
+
 from mcp.server import MCPServer
+from mcp.types import ToolAnnotations
 
 from . import __version__
+from .approved_run import ENABLE_ENV, run_approved_project
 from .diagnostics import parse_diagnostics_text
 from .runtime import inspect_tool
 from .srr import read_srr_report
@@ -22,7 +26,8 @@ def create_server() -> MCPServer:
             "version": __version__,
             "vendor_tool": "synplify_pro",
             "stage": "bootstrap",
-            "operations": ["server_info", "tool_status", "parse_diagnostics", "parse_srr"],
+            "operations": ["server_info", "tool_status", "parse_diagnostics", "parse_srr", "run_approved_synthesis"],
+            "eda_execution_enabled": os.getenv(ENABLE_ENV) == "1",
             "eda_execution_supported": False,
         }
 
@@ -40,6 +45,17 @@ def create_server() -> MCPServer:
     def parse_srr(relative_path: str, encoding: str = "auto", limit: int = 200) -> dict[str, object]:
         """Читать .srr из заранее разрешённого локального каталога, без запуска EDA."""
         return read_srr_report(relative_path, encoding, limit)
+
+    @server.tool(annotations=ToolAnnotations(
+        read_only_hint=False,
+        destructive_hint=True,
+        idempotent_hint=False,
+        open_world_hint=True,
+    ))
+    def run_approved_synthesis(project_id: str, acknowledge_side_effects: bool = False,
+                               timeout_seconds: int = 30) -> dict[str, object]:
+        """Может менять файлы: только доверенный .prj с явным разрешением."""
+        return run_approved_project(project_id, acknowledge_side_effects, timeout_seconds)
 
     return server
 
