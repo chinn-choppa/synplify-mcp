@@ -112,6 +112,8 @@ def parse_srr_bytes(
     line_count = 0
     unrecognized_markers = 0
     oversized_lines = 0
+    truncated_messages = 0
+    section_count = 0
     current_section: str | None = None
     has_content = False
 
@@ -122,7 +124,12 @@ def parse_srr_bytes(
                 return _error("TOO_MANY_LINES", source_path=source_path)
             start = offset
             offset += len(original.encode(codec, errors="strict"))
-            raw = original.rstrip("\r\n")
+            if original.endswith("\r\n"):
+                raw = original[:-2]
+            elif original.endswith(("\r", "\n")):
+                raw = original[:-1]
+            else:
+                raw = original
             if raw.strip():
                 has_content = True
             if len(raw) > MAX_RAW_CHARS:
@@ -132,6 +139,7 @@ def parse_srr_bytes(
             section = _section(raw)
             if section is not None:
                 current_section = section
+                section_count += 1
                 if len(sections) < MAX_SECTIONS:
                     sections.append({"name": section, "report_line": line_count, "byte_offset": start})
                 continue
@@ -163,6 +171,8 @@ def parse_srr_bytes(
                 source_column = int(loc["column"]) if loc["column"] else None
                 body = loc["body"]
 
+            if len(body) > MAX_MESSAGE_CHARS:
+                truncated_messages += 1
             items.append({
                 "severity": _SEVERITY[match["level"]],
                 "code": code,
@@ -178,13 +188,14 @@ def parse_srr_bytes(
                 "section": current_section,
             })
 
-    truncated = total > len(items) or oversized_lines > 0 or len(sections) == MAX_SECTIONS
+    truncated = (total > len(items) or oversized_lines > 0
+                 or truncated_messages > 0 or section_count > MAX_SECTIONS)
     if not has_content:
         health = "EMPTY"
-    elif total == 0:
-        health = "NO_DIAGNOSTICS" if sections else "UNRECOGNIZED"
     elif unrecognized_markers or truncated:
         health = "PARTIAL"
+    elif total == 0:
+        health = "NO_DIAGNOSTICS" if sections else "UNRECOGNIZED"
     else:
         health = "PARSED"
 
@@ -202,6 +213,8 @@ def parse_srr_bytes(
         "truncated": truncated,
         "unrecognized_markers": unrecognized_markers,
         "oversized_lines": oversized_lines,
+        "truncated_messages": truncated_messages,
+        "section_count": section_count,
         "sections": sections,
         "tool_version": None,
         "device": None,
@@ -258,9 +271,18 @@ def read_srr_report(relative_path: str, encoding: str = "auto", limit: int = 200
         flags = os.O_RDONLY | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0)
         fd = os.open(candidate, flags)
         with os.fdopen(fd, "rb") as stream:
-            if not stat.S_ISREG(os.fstat(stream.fileno()).st_mode):
+            before = os.fstat(stream.fileno())
+            if not stat.S_ISREG(before.st_mode):
                 return _error("NOT_REGULAR_FILE", source_path=relative_path)
+            if (before.st_dev, before.st_ino) != (info.st_dev, info.st_ino):
+                return _error("FILE_CHANGED_DURING_READ", source_path=relative_path)
             data = stream.read(MAX_REPORT_BYTES + 1)
+            after = os.fstat(stream.fileno())
+            if (before.st_size, before.st_mtime_ns) != (after.st_size, after.st_mtime_ns):
+                return _error("FILE_CHANGED_DURING_READ", source_path=relative_path)
+        # Проверяем, что имя файла после чтения не стало выходить за root.
+        if cursor.resolve(strict=True) != candidate:
+            return _error("FILE_CHANGED_DURING_READ", source_path=relative_path)
     except FileNotFoundError:
         return _error("NOT_FOUND", source_path=relative_path)
     except (OSError, RuntimeError, ValueError):

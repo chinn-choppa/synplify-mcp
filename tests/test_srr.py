@@ -125,6 +125,30 @@ class ParseSrrTests(unittest.TestCase):
         self.assertEqual(r["diagnostic_count"], 1)
         self.assertEqual(r["parse_health"], "PARTIAL")
 
+
+    def test_message_payload_truncation_is_explicit(self) -> None:
+        text = "@W: " + "q" * 3_000 + "\n"
+        result = parse_srr_bytes(text.encode("utf-8"))
+        self.assertEqual(result["parse_health"], "PARTIAL")
+        self.assertEqual(result["truncated_messages"], 1)
+        self.assertTrue(result["diagnostics"][0]["message_truncated"])
+        self.assertEqual(len(result["diagnostics"][0]["message"]), 2_048)
+
+    def test_section_cap_is_not_off_by_one(self) -> None:
+        exact = parse_srr_bytes(b"Compiler Report\n" * 100)
+        self.assertEqual(exact["section_count"], 100)
+        self.assertFalse(exact["truncated"])
+        extra = parse_srr_bytes(b"Compiler Report\n" * 101)
+        self.assertEqual(extra["section_count"], 101)
+        self.assertTrue(extra["truncated"])
+        self.assertEqual(extra["parse_health"], "PARTIAL")
+
+    def test_raw_preserves_leading_spaces(self) -> None:
+        original = "  @W: some warning   "
+        result = parse_srr_bytes((original + "\r\n").encode("utf-8"))
+        self.assertEqual(result["diagnostics"][0]["raw"], original)
+        self.assertEqual(result["diagnostics"][0]["byte_offset"], 0)
+
     def test_diagnostics_have_no_claimed_run_success(self) -> None:
         for name in ("basic.srr", "sections.srr", "truncated.srr"):
             r = parse_srr_bytes((FIXTURES / name).read_bytes())
