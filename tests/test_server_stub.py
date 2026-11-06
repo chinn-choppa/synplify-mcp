@@ -37,7 +37,8 @@ class ServerStubTests(unittest.TestCase):
                 self.assertEqual(set(server.tools), {"server_info", "tool_status", "parse_diagnostics", "parse_srr", "run_approved_synthesis"})
                 info = server.tools["server_info"]()
                 self.assertEqual(info["stage"], "bootstrap")
-                self.assertFalse(info["eda_execution_supported"])
+                self.assertTrue(info["eda_execution_supported"])
+        self.assertEqual(info["eda_vendor_test"], "NOT_RUN")
                 found = server.tools["parse_diagnostics"]("", limit=1)
                 self.assertEqual(found["count"], 0)
             finally:
