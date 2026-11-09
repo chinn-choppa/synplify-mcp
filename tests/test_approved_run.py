@@ -275,6 +275,30 @@ class ProcessRuntimeTests(unittest.TestCase):
         self.assertNotIn("license checkout failed", str(license))
         self.assertIn(b"license checkout failed", log.read_bytes())
 
+    @unittest.skipUnless(os.name == "nt", "Windows-only taskkill location")
+    def test_taskkill_uses_windows_system_directory_not_environment(self):
+        from synplify_mcp.approved_run import _terminate_tree
+
+        class FakeProcess:
+            pid = 12345
+
+            def wait(self, timeout=None):
+                return 0
+
+            def poll(self):
+                return 0
+
+        # The agent's inherited environment must not redirect an auxiliary
+        # cancellation binary to an executable of its choice.
+        with patch.dict(os.environ, {"SystemRoot": r"C:\attacker-controlled"}):
+            with patch("synplify_mcp.approved_run.subprocess.run") as call:
+                _terminate_tree(FakeProcess())
+        self.assertTrue(call.called)
+        argv = call.call_args.args[0]
+        self.assertEqual(Path(argv[0]).name.lower(), "taskkill.exe")
+        self.assertNotIn("attacker-controlled", str(argv[0]).lower())
+        self.assertEqual(argv[1:4], ["/F", "/T", "/PID"])
+
     def test_timeout_terminates_mock_process(self):
         r, _ = self.run_python("import time;time.sleep(5)", timeout=1)
         self.assertEqual(r["state"], "TIMEOUT")

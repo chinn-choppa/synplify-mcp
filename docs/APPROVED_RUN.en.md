@@ -112,3 +112,5 @@ versions and results remain `NOT_RUN`.
 - On Windows, `SYNPLIFY_MCP_EXECUTABLE` must be a native `.exe`. Batch and script wrappers (`.bat`, `.cmd`, `.ps1`) are refused because Windows may launch batch files via an interpreter even with `shell=False`. An `.exe` extension does **not** authenticate a vendor binary.
 - The project approval manifest **must be outside `SYNPLIFY_MCP_WORKSPACE`**. A coding agent with write access to its project workspace must not be able to rewrite its own allowlist. Its location is operator-controlled.
 - A `.prj` digest does not protect referenced Tcl, RTL, constraints and other mutable inputs or close the check-to-use race. Use a dedicated restricted OS account or VM for untrusted workloads. This executor is **not** an OS sandbox.
+
+**Windows process cancellation:** the native `taskkill.exe` path is resolved through WinAPI `GetSystemDirectoryW`, not the inherited `SystemRoot` environment variable. Overriding `SystemRoot` cannot redirect the helper to an attacker-controlled binary. Process-tree termination remains best-effort and is not an OS sandbox.

@@ -125,12 +125,22 @@ def _read_project_hash(project: Path) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def _windows_taskkill_path() -> Path:
+    """Ask Windows for System32: never trust an inherited SystemRoot env value."""
+    import ctypes
+
+    buf = ctypes.create_unicode_buffer(32768)
+    length = ctypes.windll.kernel32.GetSystemDirectoryW(buf, len(buf))
+    if not 0 < length < len(buf):
+        raise OSError("Cannot resolve Windows system directory")
+    return Path(buf.value) / "taskkill.exe"
+
+
 def _terminate_tree(process: subprocess.Popen[bytes]) -> None:
-    """Best effort: отдельная POSIX process group / фиксированный Windows taskkill."""
+    """Best effort: отдельная POSIX process group / системный Windows taskkill."""
     if os.name == "nt":
-        system_root = os.getenv("SystemRoot", r"C:\Windows")
-        executable = Path(system_root) / "System32" / "taskkill.exe"
         try:
+            executable = _windows_taskkill_path()
             subprocess.run(
                 [str(executable), "/F", "/T", "/PID", str(process.pid)],
                 stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
