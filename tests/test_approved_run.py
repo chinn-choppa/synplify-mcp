@@ -128,6 +128,15 @@ class ApprovedProjectTests(unittest.TestCase):
                 self.assertFalse(result["executed"])
                 self.assertEqual(self.calls, [])
 
+    def test_missing_operator_manifest_is_invalid_not_launch_error(self):
+        with patch.dict(os.environ, {
+            "SYNPLIFY_MCP_RUN_MANIFEST": str(self.root / "absent-manifest.json"),
+        }):
+            result = self.run_mock()
+        self.assertEqual(result["state"], "INVALID_MANIFEST")
+        self.assertFalse(result["executed"])
+        self.assertFalse(self.calls)
+
     def test_agent_editable_manifest_in_workspace_is_denied(self):
         # A project root exposed to a coding agent must not contain the
         # operator's allowlist; otherwise that agent can reauthorize itself.

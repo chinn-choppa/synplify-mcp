@@ -285,8 +285,12 @@ def run_approved_project(
         return _result("INVALID_WORKSPACE")
     try:
         root = root.resolve(strict=True)
-        # A manifest editable through the agent workspace would defeat the allowlist.
-        # The operator must keep approval metadata outside that workspace.
+        # Preserve INVALID_MANIFEST for a missing/untrusted approval file,
+        # rather than reporting an unrelated process LAUNCH_ERROR.
+        if (not manifest_file.is_absolute() or manifest_file.is_symlink()
+                or not manifest_file.is_file()):
+            return _result("INVALID_MANIFEST")
+        # Approval data editable through the agent workspace defeats the allowlist.
         if manifest_file.resolve(strict=True).is_relative_to(root):
             return _result("INVALID_MANIFEST")
         manifest = _read_manifest(manifest_file)
