@@ -169,6 +169,42 @@ class ReportMetricsTests(unittest.TestCase):
         self.assertIsNone(entry["available"]["value"])
         self.assertTrue(entry["available"]["reported"])
 
+    def test_ninth_context_declaration_is_not_ignored(self) -> None:
+        data = (b"Synplify Pro Version: V1\n" * 8
+                + b"Synplify Pro Version: V2\n"
+                + b"Target Device: X1\n" * 8
+                + b"Target Device: X2\n")
+        r = parse_srr_bytes(data)
+        self.assertEqual(r["context"]["tool_version"]["state"], "AMBIGUOUS")
+        self.assertEqual(r["context"]["device"]["state"], "AMBIGUOUS")
+        self.assertIsNone(r["tool_version"])
+        self.assertIsNone(r["device"])
+
+    def test_context_longer_than_identity_limit_is_ambiguous(self) -> None:
+        value = "A" * 128 + "different-suffix"
+        r = parse_srr_bytes(
+            f"Synplify Pro Version: {value}\nTarget Device: {value}\n".encode("utf-8")
+        )
+        self.assertEqual(r["context"]["tool_version"]["state"], "AMBIGUOUS")
+        self.assertEqual(r["context"]["device"]["state"], "AMBIGUOUS")
+
+    def test_second_unterminated_timing_section_is_partial(self) -> None:
+        header = (b"Performance Summary\n"
+                  b"Clock Requested Period (ns) Estimated Period (ns) Slack (ns)\n")
+        data = (b"START TIMING REPORT\n" + header
+                + b"clk_a 10.0 11.0 -1.0\nEND TIMING REPORT\n"
+                + b"START TIMING REPORT\n" + header
+                + b"clk_b 10.0 12.0 -2.0\n")
+        r = parse_srr_bytes(data)
+        self.assertEqual(r["timing"]["state"], "PARTIAL")
+        self.assertIn("TIMING_SECTION_UNTERMINATED", r["timing"]["issues"])
+
+    def test_resource_section_at_eof_is_partial(self) -> None:
+        r = parse_srr_bytes(b"Resource Usage Report\nTotal LUTs: 10\n")
+        self.assertEqual(r["resources"]["state"], "PARTIAL")
+        self.assertIn("RESOURCE_SECTION_UNTERMINATED", r["resources"]["issues"])
+        self.assertEqual(r["resources"]["items"][0]["used"]["value"], 10)
+
     def test_no_invented_synthesis_success_even_with_positive_slack(self) -> None:
         r = parse("metrics_period.srr")
         self.assertEqual(r["timing"]["clocks"][1]["slack"]["value"], 1.5)

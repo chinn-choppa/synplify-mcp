@@ -86,11 +86,11 @@ def _resource(name: str, used: str, available: str | None, raw: str,
     }
 
 
-def _context_value(rows: list[tuple[str, dict[str, Any]]]) -> dict[str, Any]:
+def _context_value(rows: list[tuple[str, dict[str, Any]]], *, uncertain: bool = False) -> dict[str, Any]:
     distinct = {value for value, _ in rows}
     if not rows:
         return {"state": "UNKNOWN", "value": None, "evidence": []}
-    if len(distinct) != 1:
+    if uncertain or len(distinct) != 1:
         return {"state": "AMBIGUOUS", "value": None,
                 "evidence": [entry for _, entry in rows[:4]]}
     value = next(iter(distinct))
@@ -104,6 +104,11 @@ def extract_metrics(text: str, codec: str, bom: int) -> dict[str, Any]:
     clocks: list[dict[str, Any]] = []
     tool_rows: list[tuple[str, dict[str, Any]]] = []
     device_rows: list[tuple[str, dict[str, Any]]] = []
+    # Limit retained identities to two; still detect every declaration.
+    tool_distinct: set[str] = set()
+    device_distinct: set[str] = set()
+    tool_uncertain = False
+    device_uncertain = False
     issues: list[str] = []
 
     def flag(code: str) -> None:
@@ -137,10 +142,20 @@ def extract_metrics(text: str, codec: str, bom: int) -> dict[str, Any]:
 
             tool = _TOOL.fullmatch(line)
             device = _DEVICE.fullmatch(line)
-            if tool and len(tool_rows) < 8:
-                tool_rows.append((tool[1][:128], _source(raw, number, pos, "CONTEXT")))
-            if device and len(device_rows) < 8:
-                device_rows.append((device[1][:128], _source(raw, number, pos, "CONTEXT")))
+            if tool:
+                value = tool[1]
+                tool_uncertain |= len(value) > 128
+                if len(tool_distinct) < 2:
+                    tool_distinct.add(value)
+                if len(tool_rows) < 8:
+                    tool_rows.append((value[:128], _source(raw, number, pos, "CONTEXT")))
+            if device:
+                value = device[1]
+                device_uncertain |= len(value) > 128
+                if len(device_distinct) < 2:
+                    device_distinct.add(value)
+                if len(device_rows) < 8:
+                    device_rows.append((value[:128], _source(raw, number, pos, "CONTEXT")))
 
             upper = line.upper()
             if upper in _SECTIONS:
@@ -160,6 +175,7 @@ def extract_metrics(text: str, codec: str, bom: int) -> dict[str, Any]:
                 if timing_active:
                     flag("TIMING_SECTION_UNTERMINATED")
                 timing_started = timing_active = timing_section_seen = True
+                timing_ended = False
                 timing_header = None
                 timing_header_evidence = None
                 performance_seen = False
@@ -260,6 +276,8 @@ def extract_metrics(text: str, codec: str, bom: int) -> dict[str, Any]:
 
     if timing_started and not timing_ended:
         flag("TIMING_SECTION_UNTERMINATED")
+    if resource_active:
+        flag("RESOURCE_SECTION_UNTERMINATED")
 
     resource_names = [item["key"] for item in resources]
     clock_names = [item["clock"] for item in clocks]
@@ -274,7 +292,8 @@ def extract_metrics(text: str, codec: str, bom: int) -> dict[str, Any]:
                       "PARTIAL" if any(item["used"]["state"] != "KNOWN" or
                       (item["available"]["reported"] and item["available"]["state"] != "KNOWN")
                       for item in resources)
-                      or any(x.startswith(("UNSUPPORTED_RESOURCE", "RESOURCE_LIMIT", "METRIC_LINE"))
+                      or any(x.startswith(("UNSUPPORTED_RESOURCE", "RESOURCE_LIMIT",
+                                           "RESOURCE_SECTION_UNTERMINATED", "METRIC_LINE"))
                              for x in issues) else "PARSED")
     timing_state = ("ABSENT" if not timing_section_seen else
                     "UNSUPPORTED" if not clocks else
@@ -287,8 +306,12 @@ def extract_metrics(text: str, codec: str, bom: int) -> dict[str, Any]:
                            for x in issues) else "PARSED")
     return {
         "context": {
-            "tool_version": _context_value(tool_rows),
-            "device": _context_value(device_rows),
+            "tool_version": _context_value(
+                tool_rows, uncertain=tool_uncertain or len(tool_distinct) > 1
+            ),
+            "device": _context_value(
+                device_rows, uncertain=device_uncertain or len(device_distinct) > 1
+            ),
         },
         "resources": {
             "state": resource_state,

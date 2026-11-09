@@ -86,3 +86,7 @@ identity and units can be proven compatible; otherwise report
 UNKNOWN/INCOMPATIBLE rather than fabricating deltas.
 #6 separately governs explicitly authorized synthesis execution and
 must never accept arbitrary shell/Tcl.
+
+## Conservative alpha boundaries
+
+All tool/device identity declarations are checked for conflicts even though returned evidence is capped at eight rows. Values over 128 characters are `AMBIGUOUS`, never compared by prefix. Each new timing section resets completion state. A resource section ending at EOF without an explicit section transition is `PARTIAL`, blocking numerical resource comparison.

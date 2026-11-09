@@ -126,6 +126,33 @@ class CompareTests(unittest.TestCase):
         self.assertIn("sb_lut4", q["incompatible_resources"])
         self.assertIsNone(next(x for x in q["changes"] if x["resource"] == "sb_lut4")["delta"])
 
+    def test_truncated_resource_section_blocks_numerical_delta(self):
+        before = (self.root / "compare_base.srr").read_text(encoding="utf-8")
+        after = (self.root / "compare_changed.srr").read_text(encoding="utf-8")
+        (self.root / "cut_base.srr").write_text(
+            before.split("Register bits not including I/Os:")[0], encoding="utf-8"
+        )
+        (self.root / "cut_candidate.srr").write_text(
+            after.split("Register bits not including I/Os:")[0], encoding="utf-8"
+        )
+        r = self.compare("cut_base.srr", "cut_candidate.srr")
+        self.assertEqual(r["context"]["state"], "MATCHED")
+        self.assertEqual(r["resources"]["state"], "UNVERIFIED_DATA")
+        self.assertEqual(r["resources"]["changes"], [])
+
+    def test_common_128_character_prefix_does_not_verify_context(self):
+        before = (self.root / "compare_base.srr").read_text(encoding="utf-8")
+        after = (self.root / "compare_changed.srr").read_text(encoding="utf-8")
+        (self.root / "long_base.srr").write_text(
+            before.replace("MOCK-CMP-1", "A" * 128 + "X"), encoding="utf-8"
+        )
+        (self.root / "long_candidate.srr").write_text(
+            after.replace("MOCK-CMP-1", "A" * 128 + "Y"), encoding="utf-8"
+        )
+        r = self.compare("long_base.srr", "long_candidate.srr")
+        self.assertEqual(r["context"]["state"], "UNVERIFIED")
+        self.assertEqual(r["resources"]["state"], "BLOCKED_CONTEXT")
+
     def test_invalid_and_malformed_path(self):
         for value in ("../secret.srr", "/etc/secret.srr", r"C:\secret.srr"):
             with self.subTest(path=value):

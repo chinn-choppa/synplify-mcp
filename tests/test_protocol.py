@@ -29,7 +29,7 @@ class ProtocolTests(unittest.TestCase):
                 runner = annotations["run_approved_synthesis"]
                 self.assertFalse(runner.read_only_hint)
                 self.assertTrue(runner.destructive_hint)
-                self.assertFalse(runner.open_world_hint)
+                self.assertTrue(runner.open_world_hint)
                 response = await client.call_tool("server_info", {})
                 self.assertFalse(response.is_error)
                 self.assertEqual(response.structured_content["server"], "synplify-mcp")

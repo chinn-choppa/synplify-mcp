@@ -60,7 +60,7 @@ def create_server() -> MCPServer:
         read_only_hint=False,
         destructive_hint=True,
         idempotent_hint=False,
-        open_world_hint=False,
+        open_world_hint=True,
     ))
     def run_approved_synthesis(project_id: str, acknowledge_side_effects: bool = False,
                                timeout_seconds: int = 30) -> dict[str, object]:
