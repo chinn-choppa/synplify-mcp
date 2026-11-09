@@ -2,7 +2,7 @@
 
 [English](RELEASE_NOTES.en.md)
 
-**Статус: кандидат, тег и GitHub Release пока не опубликованы.**
+**Экспериментальная alpha-версия; публикация определяется наличием GitHub Release.**
 
 Первый alpha-адаптер Synopsys Synplify Pro на **официальном MCP SDK 2.3.0**, без FastMCP. Доступны шесть инструментов: `server_info`, `tool_status`, `parse_diagnostics`, `parse_srr`, `compare_srr_reports`, `run_approved_synthesis`.
 

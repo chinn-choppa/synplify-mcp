@@ -2,7 +2,7 @@
 
 [Русский](RELEASE_NOTES.md)
 
-**Status: candidate only; tag and GitHub Release have not been published.**
+**Experimental alpha release; publication status is determined by the GitHub Release page.**
 
 First experimental Synopsys Synplify Pro MCP adapter on the **official MCP SDK 2.3.0** (not FastMCP). Six tools: `server_info`, `tool_status`, `parse_diagnostics`, `parse_srr`, `compare_srr_reports`, `run_approved_synthesis`.
 
