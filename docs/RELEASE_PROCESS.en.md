@@ -17,3 +17,5 @@
 ## Limits
 
 The alpha validates MCP and synthetic report handling, not licensed Synplify. `run_approved_synthesis` remains disabled by default; approved `.prj` files may execute Tcl. Real vendor versions and device acceptance are required for a stable release (**EDA_PASS=NOT_RUN**).
+
+**Tag provenance:** publishing additionally requires a tag matching `pyproject.toml` that targets **the exact current `origin/main` HEAD**. Off-main tags and stale main commits are denied. Merge the reviewed PR first, then create the tag on current main. If main advances before the release workflow starts, this deliberately fails closed.

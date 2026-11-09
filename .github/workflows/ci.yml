@@ -27,27 +27,11 @@ jobs:
         run: uv sync --locked --python ${{ matrix.python-version }}
       - name: Compile and test full MCP integration
         run: |
-          uv run --no-sync python -m compileall -q src tests
+          uv run --no-sync python -m compileall -q src tests scripts
           uv run --no-sync python -m unittest discover -s tests -v
-
-  distribution:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
-        with:
-          python-version: '3.13'
-      - name: Install fixed uv
-        run: python -m pip install uv==0.13.0
-      - name: Verify lock is current
+      - name: Verify lockfile matches project
         run: uv lock --check
-      - name: Verify locked environment
-        run: uv sync --locked --python 3.13
-      - name: Build wheel and sdist
+      - name: Build wheel and sdist on this Python/OS
         run: uv build
-      - name: Install both archives independently and exercise real MCP stdio
+      - name: Smoke-test both archives in fresh virtual environments
         run: python scripts/verify_release_artifacts.py
