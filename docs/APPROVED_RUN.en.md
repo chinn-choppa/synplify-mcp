@@ -106,3 +106,9 @@ Synplify `.prj` may generate other outputs at locations defined
 in its trusted project configuration. Public CI tests mocked
 executables and refusals; real licensed EDA acceptance, reported
 versions and results remain `NOT_RUN`.
+
+## Alpha security clarification
+
+- On Windows, `SYNPLIFY_MCP_EXECUTABLE` must be a native `.exe`. Batch and script wrappers (`.bat`, `.cmd`, `.ps1`) are refused because Windows may launch batch files via an interpreter even with `shell=False`. An `.exe` extension does **not** authenticate a vendor binary.
+- The project approval manifest **must be outside `SYNPLIFY_MCP_WORKSPACE`**. A coding agent with write access to its project workspace must not be able to rewrite its own allowlist. Its location is operator-controlled.
+- A `.prj` digest does not protect referenced Tcl, RTL, constraints and other mutable inputs or close the check-to-use race. Use a dedicated restricted OS account or VM for untrusted workloads. This executor is **not** an OS sandbox.

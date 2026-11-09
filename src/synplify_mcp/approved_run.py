@@ -269,6 +269,9 @@ def run_approved_project(
     executable = Path(configured_exe)
     if not executable.is_absolute() or executable.is_symlink() or not executable.is_file():
         return _result("INVALID_EXECUTABLE")
+    # Windows dispatches .bat/.cmd through cmd.exe even with shell=False.
+    if os.name == "nt" and executable.suffix.lower() != ".exe":
+        return _result("INVALID_EXECUTABLE")
     if os.name != "nt" and not os.access(executable, os.X_OK):
         return _result("INVALID_EXECUTABLE")
     manifest_path = os.environ.get(MANIFEST_ENV)
@@ -282,6 +285,10 @@ def run_approved_project(
         return _result("INVALID_WORKSPACE")
     try:
         root = root.resolve(strict=True)
+        # A manifest editable through the agent workspace would defeat the allowlist.
+        # The operator must keep approval metadata outside that workspace.
+        if manifest_file.resolve(strict=True).is_relative_to(root):
+            return _result("INVALID_MANIFEST")
         manifest = _read_manifest(manifest_file)
         entry = manifest["projects"].get(project_id)
         if entry is None:
