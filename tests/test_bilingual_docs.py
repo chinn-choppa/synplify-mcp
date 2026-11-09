@@ -11,6 +11,7 @@ BILINGUAL = [
     "docs/COMPATIBILITY.md", "docs/THIRD_PARTY.md",
     "docs/REPORT_FORMATS.md", "docs/SRR_PARSER.md", "docs/METRICS.md",
     "docs/COMPARE.md", "docs/APPROVED_RUN.md", "docs/INTEGRATION_REVIEW.md",
+    "docs/RELEASE_PROCESS.md", "docs/RELEASE_NOTES.md",
 ]
 
 

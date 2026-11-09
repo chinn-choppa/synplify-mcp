@@ -13,11 +13,11 @@ Python 3.11+ and `uv` are required:
 ```bash
 git clone https://github.com/chinn-choppa/synplify-mcp.git
 cd synplify-mcp
-uv sync
-uv run synplify-mcp
+uv sync --locked
+uv run --no-sync synplify-mcp
 ```
 
-MCP tools: `server_info`, `tool_status`, `parse_diagnostics`, `parse_srr`. Use a local stdio-capable MCP client and configure it to launch the installed command. A real MCP client test is separate from Python unit tests.
+MCP tools: `server_info`, `tool_status`, `parse_diagnostics`, `parse_srr`, `compare_srr_reports`, and default-disabled `run_approved_synthesis`. Use a local stdio-capable MCP client and configure it to launch the installed command. A real MCP client test is separate from Python unit tests.
 
 ## Development
 
@@ -53,3 +53,7 @@ Issue #5 adds conservative extraction only from explicitly labelled sections. Un
 ## Full integration verification
 
 All six operations are assembled and tested on Windows/Linux × Python 3.11/3.13/3.15.2. See [integration review](docs/INTEGRATION_REVIEW.en.md). This does not establish licensed Synplify acceptance or merge anything into `main`.
+
+## Alpha release candidate
+
+`0.1.0a1` stays on the official MCP SDK 2.3.0, adds a universal `uv.lock` and independently installed wheel/sdist stdio verification. **Licensed Synplify EDA: NOT_RUN.** [Release process](docs/RELEASE_PROCESS.en.md) · [Release notes](docs/RELEASE_NOTES.en.md).

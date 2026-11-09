@@ -21,8 +21,8 @@ Remove-Item Env:PYTHONPATH
 ## При наличии SDK MCP
 
 ```bash
-uv sync
-uv run synplify-mcp
+uv sync --locked
+uv run --no-sync synplify-mcp
 ```
 
 Подключить MCP Inspector либо клиент Codex/Claude/OpenCode, проверить реальный `tools/list`, затем вызвать `server_info` и `parse_diagnostics` на синтетических данных. Только после успешного фактического вызова инструмента можно фиксировать `MCP_TOOL_PASS`. Простой старт процесса или наличие пакета означает максимум `INSTALLED`.
@@ -33,4 +33,15 @@ uv run synplify-mcp
 
 ## Интеграционный CI
 
-Тесты запускаются через `uv sync` и изолированное окружение с MCP SDK 2.3.0 на Windows/Linux, Python 3.11/3.13/3.15. Обязательны реальные `tools/list` и `tools/call` через память и `stdio`, тесты всех шести операций, сравнения .srr и отказа в запуске EDA. Коммерческий Synplify/лицензия в публичных CI не требуются.
+Тесты запускаются через `uv sync --locked` и изолированное окружение с MCP SDK 2.3.0 на Windows/Linux, Python 3.11/3.13/3.15. Обязательны реальные `tools/list` и `tools/call` через память и `stdio`, тесты всех шести операций, сравнения .srr и отказа в запуске EDA. Коммерческий Synplify/лицензия в публичных CI не требуются.
+
+## Проверка установочного пакета
+
+```bash
+uv sync --locked
+uv run --no-sync python -m unittest discover -s tests -v
+uv build
+python scripts/verify_release_artifacts.py
+```
+
+CI запускает протокольные тесты на Windows/Linux с Python 3.11/3.13/3.15. Отдельно на Windows/Linux с Python 3.13 собирает wheel/sdist, устанавливает **каждый архив в новом venv** и проверяет реальный MCP `stdio` с `server_info`, `parse_diagnostics`, шестью tools и отказом от исполнения EDA при отключённом флаге. Публикация: [RELEASE_PROCESS.md](RELEASE_PROCESS.md).
