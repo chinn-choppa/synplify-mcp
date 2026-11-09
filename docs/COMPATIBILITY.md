@@ -4,8 +4,8 @@
 
 | Уровень | Ожидается | Подтверждено на момент создания |
 | --- | --- | --- |
-| Python | 3.11+ | CI: Python 3.11/3.13 на Windows/Linux; Python 3.15.2: интеграционный CI PASS, Windows/Linux (79 тестов в каждой среде) |
-| MCP | SDK 2.3.0, stdio | `MCP_TOOL_PASS`: Windows/Linux, Python 3.11/3.13, синтетический `parse_srr` через реальный клиент; см. CI PR #10 |
+| Python | 3.11+ | CI Windows/Linux × Python 3.11/3.13/3.15: 6/6, 90 тестов в каждой среде (часть OS-специфичных тестов пропускается на другой ОС) |
+| MCP | SDK 2.3.0, stdio | `MCP_TOOL_PASS`: Windows/Linux, Python 3.11/3.13/3.15, настоящий MCP `stdio` через установленный wheel/sdist |
 | Windows | Планируется | EDA `NOT_RUN` |
 | Linux | Планируется | EDA `NOT_RUN` |
 | Synopsys Synplify Pro | Разные версии, после исследования | `NOT_RUN` |
@@ -17,4 +17,4 @@ Synplify — коммерческий продукт. Этот репозито�
 
 ## Кандидат alpha `0.1.0a1`
 
-Проверка `uv sync --locked`: Windows/Linux с Python 3.11/3.13/3.15; независимые установки wheel и sdist в свежие окружения на Windows/Linux Python 3.13. Это подтверждает только MCP-протокол и синтетические парсеры. Совместимость с версиями Synplify Pro, лицензиями и конкретными устройствами — `NOT_RUN`.
+Проверка `uv sync --locked`: Windows/Linux с Python 3.11/3.13/3.15; отдельные установки wheel и sdist в свежие окружения **во всех шести** сочетаниях ОС/Python, включая вызов установленного CLI. Это подтверждает только MCP-протокол и синтетические парсеры. Совместимость с версиями Synplify Pro, лицензиями и конкретными устройствами — `NOT_RUN`.

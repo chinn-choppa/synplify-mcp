@@ -30,4 +30,4 @@ uv build
 python scripts/verify_release_artifacts.py
 ```
 
-The matrix tests Windows/Linux × Python 3.11/3.13/3.15. Additional Windows/Linux Python 3.13 jobs install each wheel and sdist **in a fresh venv**, then exercise the real official MCP stdio client, six tools, parsing and default-disabled EDA. This is not vendor acceptance. See [release procedure](RELEASE_PROCESS.en.md).
+**All six** Windows/Linux × Python 3.11/3.13/3.15 jobs run the unit/protocol suite, build wheel and sdist, and install each archive **in a separate clean venv**. The official MCP stdio client verifies both the installed Python module and **console entry point**, all six tools, diagnostics parsing and default-disabled EDA. This is not vendor acceptance. See [release procedure](RELEASE_PROCESS.en.md).

@@ -44,4 +44,4 @@ uv build
 python scripts/verify_release_artifacts.py
 ```
 
-CI запускает протокольные тесты на Windows/Linux с Python 3.11/3.13/3.15. Отдельно на Windows/Linux с Python 3.13 собирает wheel/sdist, устанавливает **каждый архив в новом venv** и проверяет реальный MCP `stdio` с `server_info`, `parse_diagnostics`, шестью tools и отказом от исполнения EDA при отключённом флаге. Публикация: [RELEASE_PROCESS.md](RELEASE_PROCESS.md).
+В **каждом из шести заданий** Windows/Linux × Python 3.11/3.13/3.15 CI выполняет тесты, собирает wheel/sdist и устанавливает **каждый архив в новом venv**. Реальный MCP-клиент проверяет запуск как модуля, так и **установленного CLI** `synplify-mcp`, все шесть tools, `server_info`, `parse_diagnostics` и запрет EDA без разрешения оператора. Публикация: [RELEASE_PROCESS.md](RELEASE_PROCESS.md).

@@ -37,6 +37,15 @@ class ReleaseReferenceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "SHA-1"):
             module.check_release_ref("v0.1.0a1", "abc", MAIN_SHA, "0.1.0a1")
 
+    def test_ci_builds_and_installs_on_all_supported_targets(self) -> None:
+        ci = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+        self.assertIn("os: [ubuntu-latest, windows-latest]", ci)
+        self.assertIn("python-version: ['3.11', '3.13', '3.15']", ci)
+        self.assertIn("uv sync --locked --python", ci)
+        self.assertIn("uv build", ci)
+        self.assertIn("python scripts/verify_release_artifacts.py", ci)
+        self.assertNotIn("  distribution:", ci)
+
     def test_release_workflow_fails_closed_before_publication(self) -> None:
         workflow = (ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
         self.assertIn("fetch-depth: 0", workflow)

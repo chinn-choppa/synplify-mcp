@@ -16,4 +16,4 @@ Preliminary Synplify timing is not post-place-and-route timing for any FPGA fami
 
 ## Alpha `0.1.0a1` candidate
 
-`uv sync --locked` runs on Windows/Linux with Python 3.11/3.13/3.15. Both wheel and sdist are installed in fresh environments on Windows/Linux Python 3.13 and tested with the real MCP stdio client. This validates protocol and synthetic parsing only; licensed Synplify Pro, devices and real synthesis are `NOT_RUN`.
+`uv sync --locked` runs on Windows/Linux with Python 3.11/3.13/3.15. Both wheel and sdist are installed in fresh environments on **all six** Windows/Linux × Python 3.11/3.13/3.15 combinations, including actual console-entry-point calls through the official MCP stdio client. This validates protocol and synthetic parsing only; licensed Synplify Pro, devices and real synthesis are `NOT_RUN`.
