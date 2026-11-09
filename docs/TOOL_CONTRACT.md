@@ -1,46 +1,21 @@
 [English](TOOL_CONTRACT.en.md)
 
-    # Контракт MCP-инструментов v0
+# Контракт MCP-инструментов — experimental
 
-    На этом этапе контракт намеренно ограничен. Все операции возвращают JSON-совместимые структуры, не содержат скрытых сетевых обращений и не запускают EDA.
+Все шесть операций работают через локальный `stdio` официального MCP Python SDK 2.3.0. Возвращают JSON-совместимые структуры; сервер не отправляет исходники или лицензии автоматически. **MCP_TOOL_PASS не означает EDA_PASS.**
 
-    ## `server_info()`
+## Пять read-only операций
 
-    Возвращает `server`, `version`, `vendor_tool`, `stage`, `operations`. `stage="experimental"` запрещает трактовать результаты как готовую автоматизацию Synopsys Synplify Pro.
+- `server_info()`: имя, версия, стадия, операции, отдельные флаги наличия, включения и фактической вендорской проверки
+- `tool_status()`: проверка доступности исполняемого файла **без запуска** и раскрытия конфиденциальных путей
+- `parse_diagnostics(text, limit=200)`: извлечение известных диагностик из текста не более 1 МиБ; отсутствие ошибок не подтверждает синтез
+- `parse_srr(relative_path, encoding="auto", limit=200)`: ограниченное чтение разрешённого `.srr` с SHA-256, исходными строками и байтовыми смещениями; неизвестные данные обозначаются явно, см. [SRR_PARSER.md](SRR_PARSER.md)
+- `compare_srr_reports(baseline_path, candidate_path, encoding="auto")`: сравнение двух разрешённых отчётов только при достаточном контексте версии/устройства/ограничений; при неизвестных ограничениях timing-дельты остаются null, см. [COMPARE.md](COMPARE.md)
 
-    ## `tool_status()`
+`parse_srr` также возвращает `context`, `resources`, `timing` при известных подписанных полях, см. [METRICS.md](METRICS.md). Предварительные оценки Synplify **не равны post-route timing**.
 
-    Проверяет наличие исполняемого файла, не запускает его. Поля: `tool`, `state`, `configured`, `executed=false`. Возможные состояния: `DETECTED_UNVERIFIED`, `NOT_FOUND`, `INVALID_OVERRIDE`. Не раскрывает полный путь, настройки лицензии или содержимое окружения.
+## Исполняющая операция, по умолчанию запрещена
 
-    ## `parse_diagnostics(text, limit=200)`
+`run_approved_synthesis(project_id, acknowledge_side_effects=false, timeout_seconds=30)`: только операторский манифест утверждённых `.prj` вне агентского workspace, фиксированный бинарник Synplify и аргументы `-batch`. `shell`/Tcl/DO-команды произвольного вида через MCP не принимаются, однако сам доверенный `.prj` **может выполнять Tcl**. Windows-обёртки `.bat`/`.cmd`/`.ps1` отвергаются. `acknowledge_side_effects` не заменяет согласие человека в MCP-клиенте.
 
-    Принимает текст журнала до **1 МиБ**. Поддерживает не более 200 результатов в одном ответе. Возвращает `tool`, `count`, `truncated`, `items` с полями `severity`, `code`, `file`, `line`, `column`, `message`, `raw`. Неизвестные строки игнорируются, а не превращаются в выдуманные ошибки.
-
-    Пример сообщения:
-
-    ```text
-    @W: rtl/top.sv(14): Width mismatch
-@E: rtl/top.sv(28): Multiple drivers found
-    ```
-
-    Обратите внимание: `parse_diagnostics` возвращает лишь совпадения с известными шаблонами. Отсутствие совпадений **не означает** успешной сборки. Исходные строки сохраняются для проверки.
-
-    ## `parse_srr(relative_path, encoding="auto", limit=200)`
-
-    Ограниченное чтение `.srr` под корнем `SYNPLIFY_MCP_WORKSPACE`. Формат JSON, состояния ошибок и ограничения подробно описаны в [спецификации парсера](SRR_PARSER.md). Отсутствие диагностик не означает `EDA_PASS`.
-
-    ## Будущие команды
-
-    Для запуска Synopsys Synplify Pro потребуются отдельные аргументы с ограниченными перечислениями и путями, явное подтверждение побочных эффектов, ограничение времени и логов, код возврата процесса и атомарно создаваемые артефакты. Не добавлять параметр `command` со свободным текстом Tcl/DO/shell.
-
-## Экспериментальные метрики ресурсов и timing
-
-`parse_srr` может возвращать дополнительно `context`, `resources`, `timing`; значения принимаются только из явно подписанных секций и единиц. Описание ограничений и семантики: [METRICS.md](METRICS.md). `timing.kind=SYNTHESIS_ESTIMATE`, не post-route timing; `synthesis_status=UNKNOWN`.
-
-## `run_approved_synthesis(project_id, acknowledge_side_effects=false, timeout_seconds=30)`
-
-Операция с **побочными эффектами**, по умолчанию запрещена. Только операторский манифест с SHA-256 проекта, настройка сервера через переменные окружения, фиксированный `synplify_pro -batch <approved.prj>`, без свободных аргументов Tcl/shell. `acknowledge_side_effects` **не** равнозначен подтверждению человеком; согласие контролирует MCP-клиент. `PROCESS_EXIT_ZERO_UNVERIFIED` не равен `EDA_PASS`. Ограничения изоляции и контракт состояний: [APPROVED_RUN.md](APPROVED_RUN.md).
-
-## `compare_srr_reports(baseline_path, candidate_path, encoding="auto")`
-
-Сопоставляет два отчёта по исходным строкам с точными SHA-256. Ресурсные дельты вычисляются только при совместимом контексте; числовой timing без полного доказательства эквивалентности ограничений не сравнивается. [Контракт RU](COMPARE.md) / [EN](COMPARE.en.md).
+`PROCESS_EXIT_ZERO_UNVERIFIED` означает только exit code 0; это **не EDA_PASS**. Вендорское тестирование пока `NOT_RUN`. Границы безопасности и статусы: [APPROVED_RUN.md](APPROVED_RUN.md).
