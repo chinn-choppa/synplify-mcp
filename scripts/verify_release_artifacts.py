@@ -21,6 +21,7 @@ import asyncio
 import os
 import sys
 from importlib.metadata import version
+from pathlib import Path
 
 from mcp import Client, StdioServerParameters
 
@@ -55,6 +56,22 @@ async def check():
         assert not refused.is_error
         assert refused.structured_content["state"] == "DISABLED"
         assert refused.structured_content["executed"] is False
+
+    # Validate the actual installed console script, not just python -m.
+    executable = Path(sys.executable).parent / (
+        "synplify-mcp.exe" if os.name == "nt" else "synplify-mcp"
+    )
+    assert executable.is_file(), f"Installed entry point not found: {executable.name}"
+    entrypoint = StdioServerParameters(
+        command=str(executable), args=[],
+        env=dict(os.environ, SYNPLIFY_MCP_ENABLE_SYNTHESIS="0"),
+    )
+    async with Client(entrypoint) as client:
+        tools = await client.list_tools()
+        assert {t.name for t in tools.tools} == EXPECTED_TOOLS
+        result = await client.call_tool("server_info", {})
+        assert not result.is_error
+        assert result.structured_content["version"] == sys.argv[1]
 
 asyncio.run(asyncio.wait_for(check(), timeout=35))
 '''

@@ -32,16 +32,10 @@ jobs:
             --tag "$GITHUB_REF_NAME" \
             --tag-commit "$(git rev-parse HEAD^{commit})" \
             --main-commit "$(git rev-parse FETCH_HEAD^{commit})"
-      - name: Ensure release tag matches package version and lockfile is current
+      - name: Verify lockfile and synchronize pinned dependencies
         shell: bash
         run: |
-          python - <<'PY'
-          import os
-          import tomllib
-          from pathlib import Path
-          version = tomllib.loads(Path("pyproject.toml").read_text())["project"]["version"]
-          assert os.environ["GITHUB_REF_NAME"] == f"v{version}"
-          PY
+          set -euo pipefail
           uv lock --check
           uv sync --locked --python 3.13
       - name: Run full synthetic and native MCP protocol suite

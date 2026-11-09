@@ -148,6 +148,42 @@ class ApprovedProjectTests(unittest.TestCase):
         self.assertFalse(outcome["executed"])
         self.assertFalse(self.calls)
 
+    def test_symlinked_operator_manifest_rejected_without_launch(self):
+        link = self.root / "manifest-link.json"
+        try:
+            link.symlink_to(self.manifest)
+        except (OSError, NotImplementedError):
+            self.skipTest("Symlinks unavailable on this OS")
+        with patch.dict(os.environ, {"SYNPLIFY_MCP_RUN_MANIFEST": str(link)}):
+            result = self.run_mock()
+        self.assertEqual(result["state"], "INVALID_MANIFEST")
+        self.assertFalse(result["executed"])
+        self.assertEqual(self.calls, [])
+
+    def test_symlinked_artifact_directory_rejected_without_launch(self):
+        link = self.root / "linked-artifacts"
+        try:
+            link.symlink_to(self.artifacts, target_is_directory=True)
+        except (OSError, NotImplementedError):
+            self.skipTest("Symlinks unavailable on this OS")
+        self.write_manifest(artifacts="linked-artifacts")
+        result = self.run_mock()
+        self.assertEqual(result["state"], "SYMLINK_DENIED")
+        self.assertFalse(result["executed"])
+        self.assertEqual(self.calls, [])
+
+    def test_untrusted_executable_symlink_rejected_without_launch(self):
+        link = self.root / ("untrusted.exe" if os.name == "nt" else "untrusted")
+        try:
+            link.symlink_to(Path(sys.executable).resolve())
+        except (OSError, NotImplementedError):
+            self.skipTest("Symlinks unavailable on this OS")
+        with patch.dict(os.environ, {"SYNPLIFY_MCP_EXECUTABLE": str(link)}):
+            result = self.run_mock()
+        self.assertEqual(result["state"], "INVALID_EXECUTABLE")
+        self.assertFalse(result["executed"])
+        self.assertEqual(self.calls, [])
+
     def test_project_modification_and_manifest_ambiguity(self):
         self.project.write_text("modified", encoding="utf-8")
         self.assertEqual(self.run_mock()["state"], "PROJECT_CHANGED")

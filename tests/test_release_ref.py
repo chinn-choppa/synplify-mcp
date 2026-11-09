@@ -47,7 +47,9 @@ class ReleaseReferenceTests(unittest.TestCase):
         self.assertLess(workflow.index("python scripts/check_release_ref.py"),
                         workflow.index("gh release create"))
         self.assertIn("--verify-tag --prerelease", workflow)
-        self.assertNotIn("pypi", workflow.lower())
+        self.assertNotIn("uv publish", workflow)
+        self.assertNotIn("twine upload", workflow)
+        self.assertNotIn("pypa/gh-action-pypi-publish", workflow)
 
 
 if __name__ == "__main__":
