@@ -15,10 +15,21 @@ These checks mark prototype implementation, **not** vendor compatibility or merg
 
 ## Outstanding acceptance
 
-- [ ] Green combined Windows/Linux CI including Python 3.15
+- [x] Green combined Windows/Linux CI including Python 3.15
 - [ ] Authorized commercial Synplify integration for tested releases and devices
 - [ ] Validate license behavior, output paths, child-process cancellation and formats
-- [ ] Review trust of .prj Tcl/includes, operator account permissions and real artifact boundaries
+- [x] Document .prj/Tcl/includes trust limits and restrict the approval manifest and Windows launchers (no OS sandbox provided)
 - [ ] Prepare supported-versions/security policy for public release
 
 Never present preliminary timing as implementation timing.
+
+## Alpha release candidate
+
+- [x] Stage `0.1.0a1` with universal `uv.lock`.
+- [x] Verify fresh wheel/sdist installations through CI.
+- [x] Prepare a tag-gated GitHub prerelease workflow.
+- [ ] Complete release PR review and obtain merge approval.
+- [ ] Check GitHub Private Vulnerability Reporting through owner permissions.
+- [ ] After approval create `v0.1.0a1` and publish the prerelease.
+
+A stable release still needs separate licensed Synplify and real-device acceptance.

@@ -19,3 +19,7 @@ Local stdio does not ensure privacy from the model backing an MCP client: a clie
 ## Support
 
 Until the first stable release, vulnerabilities are reviewed individually; a versioned maintenance policy will follow.
+
+## Alpha trust-boundary hardening
+
+On Windows the approved-run executable must be a native `.exe`, not a `.bat`/`.cmd`/`.ps1` wrapper. This is **not** vendor-binary authenticity verification. Operator approval manifests must be kept outside the agent-writable `SYNPLIFY_MCP_WORKSPACE`. Referenced Tcl, RTL, constraints and other mutable `.prj` dependencies are not protected by the project file's SHA-256. Check-to-use races remain. Use a restricted VM/OS account and actual human approval in the MCP client: there is no OS sandbox.
