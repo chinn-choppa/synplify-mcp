@@ -197,53 +197,77 @@ def _execute_batch(
     observed_bytes = 0
     collected_hash = hashlib.sha256()
     timed_out = False
-    with log_path.open("xb") as saved:
-        process = subprocess.Popen(
-            list(argv), cwd=str(cwd), stdin=subprocess.DEVNULL,
-            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-            shell=False, start_new_session=os.name != "nt",
-            creationflags=flags,
-        )
-        assert process.stdout is not None
+    process: subprocess.Popen[bytes] | None = None
+    reader: threading.Thread | None = None
+    reader_started = False
+    try:
+        with log_path.open("xb") as saved:
+            process = subprocess.Popen(
+                list(argv), cwd=str(cwd), stdin=subprocess.DEVNULL,
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                shell=False, start_new_session=os.name != "nt",
+                creationflags=flags,
+            )
+            assert process.stdout is not None
 
-        def drain() -> None:
-            nonlocal observed_bytes
+            def drain() -> None:
+                nonlocal observed_bytes
+                try:
+                    with process.stdout as stream:
+                        while True:
+                            chunk = stream.read(8192)
+                            if not chunk:
+                                break
+                            observed_bytes += len(chunk)
+                            allowed = max(0, MAX_LOG_BYTES - len(buffer))
+                            if allowed:
+                                accepted = chunk[:allowed]
+                                buffer.extend(accepted)
+                                collected_hash.update(accepted)
+                                saved.write(accepted)
+                            if observed_bytes > MAX_LOG_BYTES:
+                                over_limit.set()
+                except OSError:
+                    collector_error.set()
+
+            reader = threading.Thread(target=drain, daemon=True, name="synplify-log-reader")
+            reader.start()
+            reader_started = True
+            deadline = time.monotonic() + timeout_seconds
+            while process.poll() is None:
+                if over_limit.is_set() or collector_error.is_set():
+                    break
+                if time.monotonic() >= deadline:
+                    timed_out = True
+                    break
+                time.sleep(0.05)
+            if timed_out or over_limit.is_set() or collector_error.is_set():
+                _terminate_tree(process)
+            reader.join(timeout=2)
+            if reader.is_alive():
+                _terminate_tree(process)
+                return _result("PROCESS_TREE_UNCERTAIN", executed=True,
+                               exit_code=process.poll())
+            exit_code = process.poll()
+    except (OSError, RuntimeError):
+        if process is None:
+            # No child was created; callers may accurately report LAUNCH_ERROR.
+            raise
+        # Child already started: never report executed=False on any later
+        # reader setup, stream or log flush/close failure.
+        _terminate_tree(process)
+        if process.stdout is not None:
             try:
-                with process.stdout as stream:
-                    while True:
-                        chunk = stream.read(8192)
-                        if not chunk:
-                            break
-                        observed_bytes += len(chunk)
-                        allowed = max(0, MAX_LOG_BYTES - len(buffer))
-                        if allowed:
-                            accepted = chunk[:allowed]
-                            buffer.extend(accepted)
-                            collected_hash.update(accepted)
-                            saved.write(accepted)
-                        if observed_bytes > MAX_LOG_BYTES:
-                            over_limit.set()
+                process.stdout.close()
             except OSError:
-                collector_error.set()
-
-        thread = threading.Thread(target=drain, daemon=True, name="synplify-log-reader")
-        thread.start()
-        deadline = time.monotonic() + timeout_seconds
-        while process.poll() is None:
-            if over_limit.is_set() or collector_error.is_set():
-                break
-            if time.monotonic() >= deadline:
-                timed_out = True
-                break
-            time.sleep(0.05)
-        if timed_out or over_limit.is_set() or collector_error.is_set():
-            _terminate_tree(process)
-        thread.join(timeout=2)
-        if thread.is_alive():
-            _terminate_tree(process)
-            return _result("PROCESS_TREE_UNCERTAIN", executed=True,
-                           exit_code=process.poll())
-        exit_code = process.poll()
+                pass
+        if reader_started and reader is not None:
+            reader.join(timeout=2)
+        return _result(
+            "PROCESS_TREE_UNCERTAIN" if process.poll() is None else
+            "LOG_IO_ERROR" if reader_started else "PROCESS_SETUP_ERROR",
+            executed=True, exit_code=process.poll(), log_persisted=False,
+        )
 
     evidence = {
         "exit_code": exit_code,
@@ -251,6 +275,7 @@ def _execute_batch(
         "observed_log_bytes": observed_bytes,
         "captured_log_sha256": collected_hash.hexdigest(),
         "log_truncated": over_limit.is_set(),
+        "log_persisted": not collector_error.is_set(),
     }
     if timed_out:
         return _result("TIMEOUT", executed=True, **evidence)

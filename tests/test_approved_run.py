@@ -328,6 +328,46 @@ class ProcessRuntimeTests(unittest.TestCase):
         self.assertNotIn("attacker-controlled", str(argv[0]).lower())
         self.assertEqual(argv[1:4], ["/F", "/T", "/PID"])
 
+    def test_reader_startup_failure_does_not_leave_running_process(self):
+        script = "import time;time.sleep(20)"
+        with patch("synplify_mcp.approved_run.threading.Thread.start",
+                   side_effect=RuntimeError("thread resource exhausted")):
+            result, _ = self.run_python(script, timeout=2)
+        self.assertEqual(result["state"], "PROCESS_SETUP_ERROR")
+        self.assertTrue(result["executed"])
+        self.assertFalse(result["log_persisted"])
+        self.assertIsNotNone(result["exit_code"])
+
+    def test_log_close_failure_preserves_executed_state(self):
+        original_open = Path.open
+        log_path = self.root / "broken-close.log"
+
+        class BrokenClose:
+            def __init__(self, path):
+                self.stream = original_open(path, "xb")
+
+            def __enter__(self):
+                return self.stream
+
+            def __exit__(self, exc_type, exc_value, traceback):
+                self.stream.close()
+                raise OSError("synthetic log flush/close failure")
+
+        def patched_open(path, *args, **kwargs):
+            if Path(path) == log_path:
+                return BrokenClose(path)
+            return original_open(path, *args, **kwargs)
+
+        with patch.object(Path, "open", patched_open):
+            result = _execute_batch(
+                (sys.executable, "-c", "print('synthetic')"),
+                self.root, 3, log_path,
+            )
+        self.assertEqual(result["state"], "LOG_IO_ERROR")
+        self.assertTrue(result["executed"])
+        self.assertFalse(result["log_persisted"])
+        self.assertEqual(result["exit_code"], 0)
+
     def test_timeout_terminates_mock_process(self):
         r, _ = self.run_python("import time;time.sleep(5)", timeout=1)
         self.assertEqual(r["state"], "TIMEOUT")
