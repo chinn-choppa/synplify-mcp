@@ -57,6 +57,26 @@ async def check():
         assert refused.structured_content["state"] == "DISABLED"
         assert refused.structured_content["executed"] is False
 
+    # The installed distribution must also refuse a fully enabled request:
+    # user/agent acknowledgment is not sufficient to launch vendor Tcl.
+    enabled = StdioServerParameters(
+        command=sys.executable, args=["-m", "synplify_mcp"],
+        env=dict(os.environ, SYNPLIFY_MCP_ENABLE_SYNTHESIS="1"),
+    )
+    async with Client(enabled) as client:
+        status = await client.call_tool("server_info", {})
+        assert not status.is_error
+        assert status.structured_content["eda_execution_configured"] is True
+        assert status.structured_content["eda_execution_enabled"] is False
+        assert status.structured_content["eda_execution_supported"] is False
+        outcome = await client.call_tool(
+            "run_approved_synthesis",
+            {"project_id": "demo", "acknowledge_side_effects": True},
+        )
+        assert not outcome.is_error
+        assert outcome.structured_content["state"] == "VENDOR_EXECUTION_NOT_VALIDATED"
+        assert outcome.structured_content["executed"] is False
+
     # Validate the actual installed console script, not just python -m.
     executable = Path(sys.executable).parent / (
         "synplify-mcp.exe" if os.name == "nt" else "synplify-mcp"
