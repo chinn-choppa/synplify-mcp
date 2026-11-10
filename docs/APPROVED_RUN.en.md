@@ -2,6 +2,8 @@
 
 [Русский](APPROVED_RUN.md)
 
+> **In alpha `0.1.0a1`, actual Synplify execution through MCP is blocked.** The configuration examples and post-execution states below describe a **future** operator contract, not a working vendor-run capability of this release. Even `SYNPLIFY_MCP_ENABLE_SYNTHESIS=1` returns `VENDOR_EXECUTION_NOT_VALIDATED` and `executed=false`. Do not enable it in an agent client until OS-enforced isolation, independent human authorization and vendor validation are reviewed; see [issue #6](https://github.com/chinn-choppa/synplify-mcp/issues/6).
+
 ## Security boundary
 
 The documented batch invocation is `synplify_pro -batch <project.prj>`.

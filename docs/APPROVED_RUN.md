@@ -2,6 +2,8 @@
 
 [English](APPROVED_RUN.en.md)
 
+> **В alpha `0.1.0a1` запуск настоящего Synplify из MCP запрещён.** Все приведённые ниже примеры конфигурации и коды результатов исполнения документируют **будущий** контракт, а не работающую возможность релиза. Даже `SYNPLIFY_MCP_ENABLE_SYNTHESIS=1` возвращает `VENDOR_EXECUTION_NOT_VALIDATED`, `executed=false`. Не пытайтесь включать эту функцию в пользовательском клиенте, пока не появится отдельно проверенная OS-изоляция, подтверждение человека и вендорская приёмка; см. [Issue #6](https://github.com/chinn-choppa/synplify-mcp/issues/6).
+
 ## Почему запуск ограничен
 
 Synplify Pro поддерживает команду `synplify_pro -batch <project.prj>`,

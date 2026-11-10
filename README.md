@@ -30,7 +30,7 @@ uv run --no-sync synplify-mcp
   "mcpServers": {
     "synplify-mcp": {
       "command": "uv",
-      "args": ["--directory", "/absolute/path/to/synplify-mcp", "run", "synplify-mcp"]
+      "args": ["--directory", "/absolute/path/to/synplify-mcp", "run", "--no-sync", "synplify-mcp"]
     }
   }
 }
