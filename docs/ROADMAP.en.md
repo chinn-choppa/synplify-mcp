@@ -8,7 +8,7 @@
 - [x] #3 Report-format inventory and original synthetic fixture corpus
 - [x] #4 Safe .srr reader and structured diagnostics with evidence
 - [x] #5 Device-specific resource names and preliminary multi-clock timing
-- [x] #6 Default-off, operator-approved synthesis runner and mock tests
+- [x] #6 Mock-tested approved synthesis runner; **real vendor MCP execution is blocked in alpha**
 - [x] #7 Evidence-gated comparison of report snapshots
 
 These checks mark prototype implementation, **not** vendor compatibility or merge approval.
@@ -33,3 +33,10 @@ Never present preliminary timing as implementation timing.
 - [ ] After approval create `v0.1.0a1` and publish the prerelease.
 
 A stable release still needs separate licensed Synplify and real-device acceptance.
+
+## Before enabling actual vendor EDA execution
+
+- [ ] Enforce OS-level restrictions for Tcl and descendant processes (identity, memory, CPU, workspace).
+- [ ] Protect operator approval data and inputs against agent writes and check/use races.
+- [ ] Enforce human authorization outside caller-controlled MCP arguments.
+- [ ] Complete licensed vendor acceptance and a separate security review before enabling execution.

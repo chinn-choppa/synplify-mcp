@@ -4,7 +4,7 @@
 
 Community-focused, local-first MCP adapter for **Synopsys Synplify Pro**. This is an independently maintained open-source project, not an official vendor product.
 
-**Status: experimental alpha (0.1.0a1, release candidate).** The initial release exposes a minimal MCP server, installation detection and bounded diagnostic parsing. By default it does **not** execute synthesis or simulation. Experimental execution of operator-approved projects requires an explicit opt-in; no vendor EDA success has been validated. Arbitrary shell/Tcl arguments remain unavailable.
+**Status: experimental alpha (0.1.0a1, release candidate).** The initial release exposes a minimal MCP server, installation detection and bounded diagnostic parsing. **Actual EDA execution is blocked in the alpha build even when explicitly enabled**; it requires separately validated OS isolation, independent human authorization and vendor acceptance. Arbitrary shell/Tcl arguments remain unavailable.
 
 ## Setup
 
@@ -17,7 +17,7 @@ uv sync --locked
 uv run --no-sync synplify-mcp
 ```
 
-MCP tools: `server_info`, `tool_status`, `parse_diagnostics`, `parse_srr`, `compare_srr_reports`, and default-disabled `run_approved_synthesis`. Use a local stdio-capable MCP client and configure it to launch the installed command. A real MCP client test is separate from Python unit tests.
+MCP tools: `server_info`, `tool_status`, `parse_diagnostics`, `parse_srr`, `compare_srr_reports`, and alpha-blocked `run_approved_synthesis` (no vendor process launch). Use a local stdio-capable MCP client and configure it to launch the installed command. A real MCP client test is separate from Python unit tests.
 
 ## Development
 
@@ -44,7 +44,7 @@ Issue #5 adds conservative extraction only from explicitly labelled sections. Un
 
 ## Experimental approved-project execution
 
-`run_approved_synthesis` (#6) is disabled by default. It requires an operator-owned project allowlist and checks the `.prj` SHA-256; it never accepts arbitrary Tcl/shell arguments. The project can itself execute Tcl, so this is **not a sandbox**. Exit zero is not EDA success. Read the [operator guide](docs/APPROVED_RUN.en.md).
+`run_approved_synthesis` (#6) **never executes commercial Synplify from the alpha MCP endpoint**, even with `SYNPLIFY_MCP_ENABLE_SYNTHESIS=1`; it returns `VENDOR_EXECUTION_NOT_VALIDATED` (`executed=false`) or `DISABLED`. The internal test-only runner checks a project manifest and `.prj` digest, but embedded Tcl can escape workspace controls. Execution requires a separately reviewed, OS-isolated design with human authorization. Read the [operator guide](docs/APPROVED_RUN.en.md).
 
 ## Comparing report snapshots
 

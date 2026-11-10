@@ -14,8 +14,10 @@
 
 `parse_srr` также возвращает `context`, `resources`, `timing` при известных подписанных полях, см. [METRICS.md](METRICS.md). Предварительные оценки Synplify **не равны post-route timing**.
 
-## Исполняющая операция, по умолчанию запрещена
+## Зарезервированная исполняющая операция — запрещена в alpha
 
 `run_approved_synthesis(project_id, acknowledge_side_effects=false, timeout_seconds=30)`: только операторский манифест утверждённых `.prj` вне агентского workspace, фиксированный бинарник Synplify и аргументы `-batch`. `shell`/Tcl/DO-команды произвольного вида через MCP не принимаются, однако сам доверенный `.prj` **может выполнять Tcl**. Windows-обёртки `.bat`/`.cmd`/`.ps1` отвергаются. `acknowledge_side_effects` не заменяет согласие человека в MCP-клиенте.
 
 `PROCESS_EXIT_ZERO_UNVERIFIED` означает только exit code 0; это **не EDA_PASS**. Вендорское тестирование пока `NOT_RUN`. Границы безопасности и статусы: [APPROVED_RUN.md](APPROVED_RUN.md).
+
+**Alpha 0.1.0a1:** реальное исполнение недоступно независимо от переменных окружения. При включённом флаге без внедрённого синтетического executor операция возвращает `VENDOR_EXECUTION_NOT_VALIDATED` и `executed=false`; при выключенном — `DISABLED`. Поля `server_info.eda_execution_supported` и `eda_execution_enabled` всегда `false`. Статусы успешного запуска относятся только к внутренним тестам, а не пользовательскому MCP.

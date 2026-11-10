@@ -21,3 +21,7 @@
 ### Not verified
 - No licensed Synplify product/version or production FPGA design has been run
 - Process exit code zero never establishes verified vendor synthesis success
+
+### Security before alpha
+- Block real vendor execution from the MCP endpoint pending independently reviewed OS isolation, human authorization and vendor validation.
+- Reject manifest/project hard links and preserve `executed=true` on post-spawn setup and log failures.

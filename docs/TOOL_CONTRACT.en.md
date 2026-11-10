@@ -29,3 +29,5 @@ MCP host human confirmation is required for safe operation;
 An exit code zero returns `PROCESS_EXIT_ZERO_UNVERIFIED`, **not** EDA_PASS.
 
 The server never automatically uploads source code, logs or licenses.
+
+**Alpha 0.1.0a1: actual vendor execution is blocked**, regardless of the environment. The MCP endpoint returns `VENDOR_EXECUTION_NOT_VALIDATED` with `executed=false` when configured, or `DISABLED` by default. Both `server_info.eda_execution_supported` and `.eda_execution_enabled` are always `false`. Synthetic internal executor successes are not MCP or licensed EDA successes.
