@@ -33,7 +33,8 @@ class ProtocolTests(unittest.TestCase):
                 response = await client.call_tool("server_info", {})
                 self.assertFalse(response.is_error)
                 self.assertEqual(response.structured_content["server"], "synplify-mcp")
-                self.assertTrue(response.structured_content["eda_execution_supported"])
+                self.assertFalse(response.structured_content["eda_execution_supported"])
+                self.assertFalse(response.structured_content["eda_execution_enabled"])
                 self.assertFalse(response.structured_content["eda_execution_validated"])
                 parsed = await client.call_tool(
                     "parse_diagnostics", {"text": "@W: rtl/top.sv(14): Width mismatch"}

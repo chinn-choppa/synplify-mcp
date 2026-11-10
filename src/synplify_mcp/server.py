@@ -28,8 +28,9 @@ def create_server() -> MCPServer:
             "vendor_tool": "synplify_pro",
             "stage": "experimental",
             "operations": ["server_info", "tool_status", "parse_diagnostics", "parse_srr", "compare_srr_reports", "run_approved_synthesis"],
-            "eda_execution_enabled": os.getenv(ENABLE_ENV) == "1",
-            "eda_execution_supported": True,
+            "eda_execution_enabled": False,
+            "eda_execution_supported": False,
+            "eda_execution_configured": os.getenv(ENABLE_ENV) == "1",
             "eda_execution_validated": False,
         }
 

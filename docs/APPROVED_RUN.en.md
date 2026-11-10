@@ -114,3 +114,9 @@ versions and results remain `NOT_RUN`.
 - A `.prj` digest does not protect referenced Tcl, RTL, constraints and other mutable inputs or close the check-to-use race. Use a dedicated restricted OS account or VM for untrusted workloads. This executor is **not** an OS sandbox.
 
 **Windows process cancellation:** the native `taskkill.exe` path is resolved through WinAPI `GetSystemDirectoryW`, not the inherited `SystemRoot` environment variable. Overriding `SystemRoot` cannot redirect the helper to an attacker-controlled binary. Process-tree termination remains best-effort and is not an OS sandbox.
+
+## Alpha execution security decision
+
+**Actual vendor execution through the MCP endpoint is blocked for 0.1.0a1**, even if `SYNPLIFY_MCP_ENABLE_SYNTHESIS=1`. The tool returns `VENDOR_EXECUTION_NOT_VALIDATED` with `executed=false`, without launching Synplify. The injectable `executor` parameter exists solely for internal synthetic testing. Real execution requires a separately reviewed architecture with OS-enforced sandbox/resource isolation, protected operator manifest and .prj/Tcl inputs, server-side human authorization outside caller-controlled MCP arguments, and licensed vendor acceptance. An enable flag cannot substitute for these controls.
+
+Manifest and .prj files with more than one hard link are now rejected. This blocks pre-existing hard-link aliases but **does not** prevent same-user writes or all TOCTOU races.

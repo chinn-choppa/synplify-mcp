@@ -81,10 +81,18 @@ def _approved_relative(root: Path, relative: str, *, suffix: str | None) -> Path
 def _read_manifest(path: Path) -> dict[str, Any]:
     if not path.is_absolute() or path.is_symlink() or not path.is_file():
         raise ValueError("INVALID_MANIFEST")
-    if path.stat().st_size > MAX_MANIFEST_BYTES:
-        raise ValueError("MANIFEST_TOO_LARGE")
-    with path.open("rb") as stream:
+    flags = os.O_RDONLY | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0)
+    with os.fdopen(os.open(path, flags), "rb") as stream:
+        before = os.fstat(stream.fileno())
+        if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1:
+            raise ValueError("INVALID_MANIFEST")
+        if before.st_size > MAX_MANIFEST_BYTES:
+            raise ValueError("MANIFEST_TOO_LARGE")
         data = stream.read(MAX_MANIFEST_BYTES + 1)
+        after = os.fstat(stream.fileno())
+        if (before.st_dev, before.st_ino, before.st_mtime_ns, before.st_size) != (
+                after.st_dev, after.st_ino, after.st_mtime_ns, after.st_size):
+            raise ValueError("INVALID_MANIFEST")
     if len(data) > MAX_MANIFEST_BYTES:
         raise ValueError("MANIFEST_TOO_LARGE")
     try:
@@ -112,7 +120,8 @@ def _read_project_hash(project: Path) -> str:
     flags = os.O_RDONLY | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0)
     with os.fdopen(os.open(project, flags), "rb") as stream:
         before = os.fstat(stream.fileno())
-        if not stat.S_ISREG(before.st_mode) or before.st_size > MAX_PROJECT_BYTES:
+        if (not stat.S_ISREG(before.st_mode) or before.st_nlink != 1
+                or before.st_size > MAX_PROJECT_BYTES):
             raise ValueError("INVALID_PROJECT")
         data = stream.read(MAX_PROJECT_BYTES + 1)
         after = os.fstat(stream.fileno())
@@ -272,6 +281,11 @@ def run_approved_project(
         return _result("CONFIRMATION_REQUIRED")
     if os.environ.get(ENABLE_ENV) != "1":
         return _result("DISABLED")
+    # There is no portable OS sandbox or independently enforced human approval
+    # for vendor Tcl yet. The alpha MCP endpoint must never launch real EDA.
+    # The injected executor is restricted to internal synthetic acceptance tests.
+    if executor is None:
+        return _result("VENDOR_EXECUTION_NOT_VALIDATED")
 
     configured_exe = os.environ.get(EXECUTABLE_ENV)
     if not configured_exe:

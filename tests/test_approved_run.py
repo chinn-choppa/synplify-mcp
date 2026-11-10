@@ -148,6 +148,35 @@ class ApprovedProjectTests(unittest.TestCase):
         self.assertFalse(outcome["executed"])
         self.assertFalse(self.calls)
 
+    def test_hardlinked_operator_manifest_rejected_without_launch(self):
+        hardlink = self.root / "linked-manifest.json"
+        try:
+            os.link(self.manifest, hardlink)
+        except (OSError, NotImplementedError):
+            self.skipTest("Hard links unavailable on this filesystem")
+        result = self.run_mock()
+        self.assertEqual(result["state"], "INVALID_MANIFEST")
+        self.assertFalse(result["executed"])
+        self.assertFalse(self.calls)
+
+    def test_hardlinked_project_rejected_without_launch(self):
+        link = self.root / "project-hardlink.prj"
+        try:
+            os.link(self.project, link)
+        except (OSError, NotImplementedError):
+            self.skipTest("Hard links unavailable on this filesystem")
+        result = self.run_mock()
+        self.assertEqual(result["state"], "INVALID_PROJECT")
+        self.assertFalse(result["executed"])
+        self.assertFalse(self.calls)
+
+    def test_real_vendor_execution_blocked_even_when_enabled(self):
+        result = run_approved_project("demo", True, 10)
+        self.assertEqual(result["state"], "VENDOR_EXECUTION_NOT_VALIDATED")
+        self.assertFalse(result["executed"])
+        self.assertFalse(self.calls)
+        self.assertEqual(list(self.artifacts.iterdir()), [])
+
     def test_symlinked_operator_manifest_rejected_without_launch(self):
         link = self.root / "manifest-link.json"
         try:
