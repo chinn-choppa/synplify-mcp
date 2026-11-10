@@ -1,3 +1,5 @@
+[English](ARCHITECTURE.en.md)
+
 # Архитектура
 
 ## Роли компонентов
