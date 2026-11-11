@@ -1,0 +1,13 @@
+Synthetic example — not produced by Synplify Pro
+Synplify Pro Version: MOCK-OLD-1
+Target Device: DEMO-FPGA-A
+Resource Usage Report
+Total LUTs: 1,024
+Register bits not including I/Os: 512
+I/O ports: 3
+START OF TIMING REPORT
+Performance Summary
+Clock Requested Frequency (MHz) Estimated Frequency (MHz) Slack (ns)
+clk_fast 100.0 91.0 -1.0
+clk_slow 50.0 48.0 -0.8
+END OF TIMING REPORT

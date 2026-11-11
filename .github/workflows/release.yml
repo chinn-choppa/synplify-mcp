@@ -1,0 +1,55 @@
+name: Publish alpha GitHub Release
+
+on:
+  push:
+    tags: ['v0.1.0a*']
+
+permissions:
+  contents: read
+
+jobs:
+  publish-prerelease:
+    if: github.repository == 'chinn-choppa/synplify-mcp'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.13'
+      - name: Install fixed uv
+        run: python -m pip install uv==0.13.0
+      - name: Require the tagged commit to equal the reviewed main HEAD
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main
+          python scripts/check_release_ref.py \
+            --tag "$GITHUB_REF_NAME" \
+            --tag-commit "$(git rev-parse HEAD^{commit})" \
+            --main-commit "$(git rev-parse FETCH_HEAD^{commit})"
+      - name: Verify lockfile and synchronize pinned dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          uv lock --check
+          uv sync --locked --python 3.13
+      - name: Run full synthetic and native MCP protocol suite
+        run: uv run --no-sync python -m unittest discover -s tests -v
+      - name: Build and validate wheel and sdist
+        run: |
+          uv build
+          python scripts/verify_release_artifacts.py
+      - name: Publish GitHub prerelease only (no PyPI)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --verify-tag --prerelease \
+            --title "synplify-mcp $GITHUB_REF_NAME" \
+            --notes-file docs/RELEASE_NOTES.en.md

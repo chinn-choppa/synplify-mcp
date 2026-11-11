@@ -1,0 +1,10 @@
+Synthetic example — not produced by Synplify Pro
+Resource Usage Report
+Total LUTs: Unknown
+Block RAMs: N/A
+START OF TIMING REPORT
+Performance Summary
+Clock Requested Period (ns) Estimated Period (ns) Slack (ns)
+clk_unconstrained Unconstrained 10.0 N/A
+clk_missing N/A 11.0 Unknown
+END OF TIMING REPORT

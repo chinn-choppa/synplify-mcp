@@ -1,0 +1,13 @@
+Synthetic example — not produced by Synplify Pro
+Synplify Pro Version: MOCK-NEW-2
+Target Device: DEMO-FPGA-B
+Resource Usage Report
+Resource Used Available
+SB_RAM40_4K 2 8
+SB_LUT4 35 128
+START TIMING REPORT
+Performance Summary
+Clock Requested Period (ns) Estimated Period (ns) Slack (ns)
+core_clk 8.00 8.50 -0.50
+aux_clk 16.00 14.50 1.50
+END TIMING REPORT

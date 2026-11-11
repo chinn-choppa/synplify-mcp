@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "synplify-mcp"
-version = "0.0.1"
+version = "0.1.0a1"
 description = "Локальный MCP-сервер для анализа синтеза FPGA и отчётов Synopsys Synplify Pro"
 readme = "README.md"
 requires-python = ">=3.11"

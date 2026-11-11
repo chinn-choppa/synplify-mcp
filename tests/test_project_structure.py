@@ -11,7 +11,9 @@ class ProjectStructureTests(unittest.TestCase):
         for name in (
             "README.md", "README.en.md", "CONTRIBUTING.md", "SECURITY.md",
             "CODE_OF_CONDUCT.md", "LICENSE", "AGENTS.md", "CHANGELOG.md",
-            ".github/workflows/ci.yml", "docs/ARCHITECTURE.md",
+            ".github/workflows/ci.yml", ".github/workflows/release.yml",
+            "uv.lock", "scripts/verify_release_artifacts.py",
+            "docs/RELEASE_PROCESS.md", "docs/RELEASE_NOTES.md", "docs/ARCHITECTURE.md",
             "docs/TOOL_CONTRACT.md", "docs/TESTING.md", "docs/ROADMAP.md",
         ):
             with self.subTest(name=name):
@@ -23,6 +25,9 @@ class ProjectStructureTests(unittest.TestCase):
         self.assertEqual(data["project"]["name"], root.name)
         self.assertIn(root.name, data["project"]["scripts"])
         self.assertIn("mcp==2.3.0", data["project"]["dependencies"])
+        self.assertNotIn("fastmcp", " ".join(data["project"]["dependencies"]).lower())
+        import synplify_mcp
+        self.assertEqual(data["project"]["version"], synplify_mcp.__version__)
 
 
 if __name__ == "__main__":
