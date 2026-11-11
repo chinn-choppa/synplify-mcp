@@ -1,0 +1,85 @@
+name: Publish approved Synplify MCP alpha (one-shot)
+
+on:
+  workflow_run:
+    workflows: ['CI']
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    if: >-
+      github.repository == 'chinn-choppa/synplify-mcp' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      startsWith(github.event.workflow_run.head_commit.message, 'chore(release): publish v0.1.0a1')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.13'
+      - name: Verify successful CI SHA equals current main and package version
+        env:
+          APPROVED_SHA: ${{ github.event.workflow_run.head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main
+          test "$(git rev-parse HEAD^{commit})" = "$APPROVED_SHA"
+          test "$(git rev-parse FETCH_HEAD^{commit})" = "$APPROVED_SHA"
+          python scripts/check_release_ref.py \
+            --tag v0.1.0a1 \
+            --tag-commit "$APPROVED_SHA" \
+            --main-commit "$APPROVED_SHA"
+      - name: Install pinned uv and validate lock
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install uv==0.13.0
+          uv lock --check
+          uv sync --locked --python 3.13
+      - name: Verify synthetic/protocol tests and release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          uv run --no-sync python -m unittest discover -s tests -v
+          uv build
+          python scripts/verify_release_artifacts.py
+      - name: Create verified tag and publish GitHub prerelease (no PyPI)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APPROVED_SHA: ${{ github.event.workflow_run.head_sha }}
+          TAG: v0.1.0a1
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main
+          test "$(git rev-parse FETCH_HEAD^{commit})" = "$APPROVED_SHA"
+          existing="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" \
+            --jq '.object.sha' 2>/dev/null || true)"
+          if [[ -n "$existing" ]]; then
+            test "$existing" = "$APPROVED_SHA"
+          else
+            gh api -X POST "repos/$GITHUB_REPOSITORY/git/refs" \
+              -f "ref=refs/tags/$TAG" -f "sha=$APPROVED_SHA"
+          fi
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo 'RELEASE_ALREADY_PUBLISHED'
+            exit 0
+          fi
+          gh release create "$TAG" dist/* \
+            --verify-tag --prerelease \
+            --title "synplify-mcp $TAG" \
+            --notes-file docs/RELEASE_NOTES.en.md
+          gh release view "$TAG" --json tagName,isDraft,isPrerelease,assets,url
