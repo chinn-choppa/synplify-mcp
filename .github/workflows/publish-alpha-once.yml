@@ -65,21 +65,23 @@ jobs:
         run: |
           set -euo pipefail
           git fetch --no-tags origin main
-          test "$(git rev-parse FETCH_HEAD^{commit})" = "$APPROVED_SHA"
-          existing="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" \
-            --jq '.object.sha' 2>/dev/null || true)"
-          if [[ -n "$existing" ]]; then
-            test "$existing" = "$APPROVED_SHA"
-          else
-            gh api -X POST "repos/$GITHUB_REPOSITORY/git/refs" \
-              -f "ref=refs/tags/$TAG" -f "sha=$APPROVED_SHA"
+          current_main="$(git rev-parse FETCH_HEAD^{commit})"
+          echo "Verified CI SHA: $APPROVED_SHA; current main: $current_main"
+          test "$current_main" = "$APPROVED_SHA"
+          # Resolve the existing tag independently of the GitHub API.
+          existing="$(git ls-remote --refs origin "refs/tags/$TAG" | cut -f1)"
+          if [[ -n "$existing" && "$existing" != "$APPROVED_SHA" ]]; then
+            echo "::error::Existing tag points to an unapproved commit"
+            exit 1
           fi
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo 'RELEASE_ALREADY_PUBLISHED'
             exit 0
           fi
+          # The user has explicitly approved the one-time release. When the
+          # tag is absent, --target creates it on the verified commit SHA.
           gh release create "$TAG" dist/* \
-            --verify-tag --prerelease \
+            --target "$APPROVED_SHA" --prerelease \
             --title "synplify-mcp $TAG" \
             --notes-file docs/RELEASE_NOTES.en.md
           gh release view "$TAG" --json tagName,isDraft,isPrerelease,assets,url
